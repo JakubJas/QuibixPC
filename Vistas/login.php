@@ -15,6 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loginBtn'])) {
     <title>Login</title>
     <link rel="stylesheet" href="../Public/CSS/login.css">
     <link rel="stylesheet" href="../Public/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../Public/CSS/validaciones.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="../JS/validacionesLogin.js"></script>
+
 </head>
 <body>
     <div id="container">
@@ -24,7 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loginBtn'])) {
             <form action="" method="POST" class="login-form">
                 <div class="mb-3">
                     <label for="usuario" class="form-label">Usuario</label>
-                    <input id="usuario" name="usuario" type="text" class="form-control">
+                    <input autofocus id="usuario" name="usuario" type="text" class="form-control">
+                    <div class="col-3"></div><div class="col-3 error"  id="FuserErr"></div>
+
                 </div>
                 <div>
                     <label for="clave" class="form-label">Contraseña</label>
