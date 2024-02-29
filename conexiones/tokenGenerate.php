@@ -12,9 +12,9 @@ class Token {
         return bin2hex(random_bytes(32)); 
     }
 
-    public function insertarToken($user_id) {
+    public function insertarToken($usuarioID) {
 
-        $session_duration = (3600*60*24)*2;
+        $session_duration = 3600;
 
         $token = $this->generateToken();
 
@@ -26,11 +26,11 @@ class Token {
         $statement->execute();
     }
 
-    public function verificarToken($token, $user_id) {
+    public function verificarToken($token, $usuarioID) {
         $current_time = date('Y-m-d H:i:s');
-        $query = "SELECT * FROM tokens WHERE token = ? AND user_id = ? AND expires_at > ?";
+        $query = "SELECT * FROM tokens WHERE token = ? AND usuarioID = ? AND expires_at > ?";
         $statement = $this->conexion->prepare($query);
-        $statement->bind_param("sis", $token, $user_id, $current_time);
+        $statement->bind_param("sis", $token, $usuarioID, $current_time);
         $statement->execute();
         $result = $statement->get_result();
         return $result->num_rows > 0;

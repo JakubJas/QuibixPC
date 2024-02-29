@@ -1,3 +1,12 @@
+<?php
+require_once '../controller/procesarLogin.php';
+
+$login = new login();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loginBtn'])) {
+    $login->processLogin();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +21,7 @@
         <div id="login_cont">
             <h2>Login</h2>
 
-            <form action="procesar_login.php" method="POST" class="login-form">
+            <form action="" method="POST" class="login-form">
                 <div class="mb-3">
                     <label for="usuario" class="form-label">Usuario</label>
                     <input id="usuario" name="usuario" type="text" class="form-control">
