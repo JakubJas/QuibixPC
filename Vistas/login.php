@@ -28,16 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loginBtn'])) {
             <form action="" method="POST" class="login-form">
                 <div class="mb-3">
                     <label for="usuario" class="form-label">Usuario</label>
-                    <input autofocus id="usuario" name="usuario" type="text" class="form-control">
-                    <div class="col-3"></div><div class="col-3 error"  id="FuserErr"></div>
-
+                    <input autofocus id="usuario" name="usuario" type="text" class="obligatorio form-control">
                 </div>
                 <div>
                     <label for="clave" class="form-label">Contraseña</label>
                     <input id="clave" name="clave" type="password" class="form-control">
                 </div>
                 <button type="submit" name="loginBtn" id="loginBtn" class="btn btn-primary btn-lg btn-block">Login</button>
-                <p id="register"><a href="register.html">¿No tienes cuenta?</a></p>
             </form>
         </div>
     </div>

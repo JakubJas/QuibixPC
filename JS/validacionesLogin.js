@@ -1,34 +1,59 @@
-function validaFormularioObl() {
+class LoginValidator {
+    constructor() {
+        this.formulario = document.querySelector('.login-form');
+        this.usuarioInput = document.getElementById('usuario');
+        this.claveInput = document.getElementById('clave');
+        this.submitButton = document.getElementById('loginBtn');
 
-    var exito = true;
-
-    var controles = document.getElementsByClassName("obligatorio");
-    var ncontroles = controles.length;
-    for (var i = 0; i < ncontroles; i++) {
-        if (controles[i].value == "") {
-
-            exito = false;
-            controles[i].parentNode.classList.add("error1");
-        }
-        else {
-            controles[i].parentNode.classList.remove("error1");
-        }
+        this.formulario.addEventListener('submit', this.validarLogin.bind(this));
     }
-    return exito;
-}
 
-function validaFormularioReg(){
+    validarLogin(event) {
+        event.preventDefault();
 
-    var txtUr = document.myForm.email.value;
+        const usuario = this.usuarioInput.value.trim();
+        const clave = this.claveInput.value.trim();
 
-    var UserErr  = true;
+        // Verifica si el campo de usuario está vacío
+        if (usuario === "") {
+            alert("Por favor, ingresa un usuario.");
+            return false;
+        }
 
-    var regexU = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+        // Verifica si el campo de clave está vacío
+        if (clave === "") {
+            alert("Por favor, ingresa una contraseña.");
+            return false;
+        }
 
-    regexU.test(txtUr) === false  ? printError("EuserErr", "Formato no valido") : printError("UserErr", ""), UserErr = false;
+        // Envía la solicitud AJAX para verificar las credenciales
+        $.ajax({
+            url: '../controller/verificarCredenciales.php', 
+            type: 'POST',
+            data: {
+                usuario: usuario,
+                clave: clave
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    alert("Inicio de sesión exitoso");
+                    // Redirige a la página principal u otra página
+                    window.location.href = "main.html";
+                } else {
+                    alert("Usuario o contraseña incorrectos");
+                }
+            },
+            error: function(error) {
+                console.error('Error al verificar credenciales:', error);
+            }
+        });
 
-    if(( UserErr || MovilErr) == true){
         return false;
     }
-
 }
+
+// Crea una instancia de LoginValidator cuando el documento esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    new LoginValidator();
+});

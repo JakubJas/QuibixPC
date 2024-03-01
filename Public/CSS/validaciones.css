@@ -1,18 +1,5 @@
-.error1{  
-    position: relative;
-}
-.error1::after{
-margin-top: 5px;
-position:absolute;
-top:0;
-left:90%;
-content:"X";
-color:white;
-font-size:1em;
-text-align:center;
-line-height:25px;
-display:inline-block;
-width:25px;
-height:25px;
-background-color:red;
+.error-message {
+    display: none;
+    color: red;
+    font-size: 12px;
 }
