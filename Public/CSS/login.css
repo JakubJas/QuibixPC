@@ -1,14 +1,177 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body{
-    width: 100%;
-    height: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+}
+#container{
     display: flex;
     justify-content: center;
     align-items: center;
 }
-#container{
-    width: 25vh;
+
+#login_cont{
+    width: 35vh;
+    height: 45vh;
+    max-width: 1200px;
+    margin: 25vh;
+    border: white 2px solid;
+    border-radius: 20%;
+    background: linear-gradient(
+        45deg,
+        #66ff00, #03c222, #66ff00, #03c222,
+        #66ff00, #03c222, #66ff00, #03c222
+    );
+    background-size: 800%;
+    animation: glowing 60s linear infinite;
 }
 
-h2{
+@keyframes glowing {
+    0%{
+        background-position: 0, 0;
+    }
+
+    50%{
+        background-position: 400%, 0;
+    }
+
+    100%{
+        background-position: 0, 0;
+    }
+}
+
+
+.title{
     text-align: center;
+    margin-top: 3%;
+}
+
+hr{
+    color: black;
+    width: 90%;
+    margin-left: 5%;
+    background-color: white;
+}
+
+.subTitle{
+    margin-left: 1vh;
+    font-weight: bold;
+    margin-top: 3%;
+}
+
+.recuadros{
+    padding: 1vh;
+    width: 32vh;
+    height: 5vh;
+    margin-left: 3%;
+    margin-top: 3%;
+    border-radius: 1vh;
+    border: none;
+}
+
+.loginBtn{
+    display: flex;
+    justify-content: center;
+    width: 10vh;
+    height: 4vh;
+    padding: 0.5vh;
+    margin: 6vh 0 0 12vh;
+    border-radius: 25vh;
+    background: linear-gradient(to right,#00e627, #66ff00, #00e627);
+}
+
+
+.bg_animate{
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(to right, #66ff00, #03c222);
+}
+
+.burbuja{
+    width: 15vh;
+    height: 15vh;
+    border-radius: 50%;
+    background-color: #fff;
+    opacity: 0;
+
+    position: absolute;
+    bottom: -150;
+    
+    animation: burbujas 3s linear infinite;
+}
+
+.burbuja:nth-child(1){
+    width: 10vh;
+    height: 10vh;
+    left: 5%;
+    animation-duration: 4s;
+    animation-delay: 3s;
+}
+.burbuja:nth-child(2){
+    width: 5vh;
+    height: 5vh;
+    left: 20%;
+    animation-duration: 4s;
+    animation-delay: 1s;
+}
+.burbuja:nth-child(3){
+    width: 15vh;
+    height: 15vh;
+    left: 40%;
+    animation-duration: 9s;
+    animation-delay: 1s;
+}
+.burbuja:nth-child(4){
+    width: 17vh;
+    height: 17vh;
+    left: 20%;
+    animation-duration: 10s;
+    animation-delay: 1.5s;
+}
+.burbuja:nth-child(5){
+    width: 3vh;
+    height: 3vh;
+    left: 60%;
+    animation-duration: 3s;
+    animation-delay: 1s;
+}
+.burbuja:nth-child(6){
+    width: 12vh;
+    height: 12vh;
+    left: 70%;
+    animation-duration: 6s;
+    animation-delay: 3s;
+}
+.burbuja:nth-child(7){
+    width: 7vh;
+    height: 7vh;
+    left: 90%;
+    animation-duration: 7s;
+    animation-delay: 2s;
+}
+
+@keyframes burbujas{
+    0%{
+        bottom: 0;
+        opacity: 0;
+
+    }
+    30%{
+        transform: translateX(20%);
+
+    }
+    50%{
+        opacity: .4;
+        
+    }
+    80%{
+        transform: translateY(20%);
+    }
+    100%{
+        bottom: 100vh;
+        opacity: 0;
+    }
 }

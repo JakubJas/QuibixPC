@@ -21,22 +21,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loginBtn'])) {
 
 </head>
 <body>
+    <header class="bg_animate">
+
+    <div class="burbujas">
+        <div class="burbuja"></div>
+        <div class="burbuja"></div>
+        <div class="burbuja"></div>
+        <div class="burbuja"></div>
+        <div class="burbuja"></div>
+        <div class="burbuja"></div>
+        <div class="burbuja"></div>
+    </div>
+
     <div id="container">
         <div id="login_cont">
-            <h2>Login</h2>
+            <h2 class="title">Login</h2>
+            <hr>
 
             <form action="" method="POST" class="login-form">
                 <div class="mb-3">
-                    <label for="usuario" class="form-label">Usuario</label>
-                    <input autofocus id="usuario" name="usuario" type="text" class="obligatorio form-control">
+                    <label for="usuario" class="subTitle">Usuario</label>
+                    <input autofocus id="usuario" name="usuario" type="text" class="obligatorio recuadros">
                 </div>
                 <div>
-                    <label for="clave" class="form-label">Contraseña</label>
-                    <input id="clave" name="clave" type="password" class="form-control">
+                    <label for="clave" class="subTitle">Contraseña</label>
+                    <input id="clave" name="clave" type="password" class="recuadros">
                 </div>
-                <button type="submit" name="loginBtn" id="loginBtn" class="btn btn-primary btn-lg btn-block">Login</button>
+                <button type="submit" name="loginBtn" id="loginBtn" class="loginBtn">Login</button>
             </form>
         </div>
     </div>
+    </header>
 </body>
 </html>
