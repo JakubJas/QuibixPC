@@ -60,6 +60,7 @@ hr{
     margin-left: 1vh;
     font-weight: bold;
     margin-top: 3%;
+    font-size: 2vh;
 }
 
 .recuadros{
@@ -75,12 +76,15 @@ hr{
 .loginBtn{
     display: flex;
     justify-content: center;
-    width: 10vh;
-    height: 4vh;
-    padding: 0.5vh;
-    margin: 6vh 0 0 12vh;
+    width: 14vh;
+    height: 6vh;
+    padding: 1vh;
+    margin: 2vh 0 0 10.5vh;
     border-radius: 25vh;
-    background: linear-gradient(to right,#00e627, #66ff00, #00e627);
+    font-size: 2vh;
+    color: white;
+    background-color: black;
+    font-weight: bold;
 }
 
 

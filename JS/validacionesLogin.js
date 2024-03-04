@@ -14,5 +14,6 @@ function validaFormulario() {
         return false;
     }
 
+    // Si ambos campos no están vacíos, devuelve true para permitir el envío del formulario
     return true;
 }
