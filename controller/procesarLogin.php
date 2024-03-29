@@ -29,7 +29,7 @@ class login{
                 $token->insertarToken($user_id);
             
 
-                header("Location: ../Vistas/main.html");
+                header("Location: ../Vistas/main.php");
                 exit();
             }
         }
