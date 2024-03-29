@@ -36,7 +36,7 @@ class Producto {
     }
 
     public function getProductos() {
-        $sql = "SELECT p.id, p.nombre, p.descripcion, p.categoriaID, p.stock, p.precio
+        $sql = "SELECT p.id, p.nombre, p.descripcion, p.categoriaID, p.stock, p.precio 
                 FROM Producto p
                 INNER JOIN Categoria c ON p.categoriaID = c.id";
     

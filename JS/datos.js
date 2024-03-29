@@ -1,13 +1,13 @@
 function showContenido(seccion) {
 
-    if (seccion === 'inicio') {
-        window.location.href = '/proyecto/view/menu.php';
+    if (seccion === 'Principal') {
+        window.location.href = '../view/main.php';
     } else {
         $('.container').hide();
         $('#' + seccion).show();
 
         switch (seccion) {
-            case 'marcas':
+            case 'productos':
                 getProductos();
                 break;
             default:
@@ -20,28 +20,43 @@ function showContenido(seccion) {
 function getProductos() {
 
     $.ajax({
-        url: 'http://localhost/Proyecto/connect/api.php/marca',
+        url: 'http://localhost/proyectoquibix/QuibixPC/conexiones/api.php/Producto',
         type: 'GET',
         dataType: 'json',
         success: function(response) {
+            $('#productos').empty();
 
-            $('#marcas').empty();
+            var table = $('<table>').addClass('table').css('background-color', '#E3E2E2'); 
+            var headerRow = $('<tr>');
+            headerRow.append($('<th>').text('ID Producto'));
+            headerRow.append($('<th>').text('ID Marca'));
+            headerRow.append($('<th>').text('Nombre Marca'));
+            headerRow.append($('<th>').text('ID Modelo'));
+            headerRow.append($('<th>').text('Nombre Modelo'));
+            headerRow.append($('<th>').text('Stock'));
+            headerRow.append($('<th>').text('Precio Unidad'));
+            headerRow.append($('<th>').text('Tallas'));
+            headerRow.append($('<th>').text('Cantidad'));
+            headerRow.append($('<th>').text('Acción'));
+            table.append(headerRow);
 
-            var tabla = $('<table>').addClass('table');
-            var cabecera = $('<thead>').append($('<tr>').append($('<th>').text('ID'), $('<th>').text('Nombre')));
-            
-            tabla.append(cabecera);
-            var cuerpo = $('<tbody>');
-
-            $.each(response, function(index, marca) {
-                var fila = $('<tr>').append($('<td>').text(marca.id_marca), $('<td>').text(marca.nombre_marca));
-                cuerpo.append(fila);
+            $.each(response, function(index, producto) {
+                var row = $('<tr>');
+                row.append($('<td>').text(producto.id));
+                row.append($('<td>').text(producto.nombre));
+                row.append($('<td>').text(producto.descripcion));
+                row.append($('<td>').text(producto.categoriaID));
+                row.append($('<td>').text(producto.stock));
+                row.append($('<td>').text(producto.precio));
+                
+                
+                table.append(row);
             });
-            tabla.append(cuerpo);
-            $('#marcas').append(tabla);
+
+            $('#productos').append(table);
         },
         error: function(xhr, status, error) {
-            console.error('Error al obtener marcas:', error);
+            console.error('Error al obtener productos:', error);
         }
     });
 }

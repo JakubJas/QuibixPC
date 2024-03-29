@@ -1,0 +1,75 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.bg_animate{
+    background: linear-gradient(to right, #66ff00, #03c222);
+    overflow: auto;
+}
+
+.logo{   
+    float: left;
+    background-image: url(../IMG_Web/Quibix_Logo.png);
+    height: 10vh;
+    width: 10vh;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+a{
+    text-decoration: none;
+    color: black;
+  }
+
+.ham{
+    float: right;
+    background-color: rgb(235, 192, 3);
+    background-image: url(../IMG_Web/ham.png);
+    height: 3vh;
+    width: 3vh;
+    display: flex;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+ul{
+    display: none;
+  }
+  
+input:checked  ~ ul{
+    display:block;
+    width: 10vh;
+    float: right;
+}
+
+input {
+    display: none;
+}
+
+label {
+    box-sizing: border-box;
+    display: inline-block;
+    border: 1px solid black;
+    border-radius: 5px;
+    width: 50px;
+    height: 30px;
+    line-height: 30px;
+    font-weight: bold;
+    text-align: center;
+    user-select: none;
+  }
+
+  li {
+    display: block;
+    background: lightgrey;
+    margin: 0;
+    padding: 10px;
+    list-style: none;
+    border-bottom: 1px solid grey;
+  }
+ 
+/************************************************************************************/
