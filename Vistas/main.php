@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Principal</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="../Public/CSS/mainPref.css">
     <link rel="stylesheet" href="../Public/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../Public/CSS/mainPref.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../JS/datos.js"></script>    
 
@@ -21,8 +20,8 @@
             <label for="menu" class="ham"></label>
             <ul>
                 <li><a href="#" onclick="showContenido('productos')">Productos</a></li>
-                <li><a href="">Clientes</a></li>
-                <li><a href="">Citas</a></li>
+                <li><a href="#" onclick="showContenido('')">Citas</a></li>
+                <li><a href="#" onclick="showContenido('clientes')">Clientes</a></li>
             </ul>
         </nav>
     </header>
@@ -81,11 +80,15 @@
             </div>
         
         </div>
+        
         <div id="productos" class="container" style="display: none;">
-        <h2>Productos</h2>
-        <h5>Los mejores productos para tu amigo canino</h5>
-    </div><br>
+        </div><br>
+        
+        <div id="clientes" class="container" style="display: none;">
+        </div><br>
+
     </div>
+
     <footer>
 
     </footer>

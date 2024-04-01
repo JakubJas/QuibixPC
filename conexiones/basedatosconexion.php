@@ -13,7 +13,7 @@ class connection{
         if (!$conn) {
             die("Connection failed: " . mysqli_connect_error());
         }
-        echo "Connected successfully ";
+        
         return $conn;
         mysqli_close($conn);
     }
@@ -22,9 +22,9 @@ class connection{
 
         try{
             $link = new PDO(
-                "mysql:host=localhost;dbname=".connection::dbConnection()['database'],
-                connection::dbConnection()['username'],
-                connection::dbConnection()['password']
+                "mysql:host=localhost;dbname=".connection::dbConnection()['quibixpc'],
+                connection::dbConnection()['root'],
+                connection::dbConnection()['']
             );
 
             $link->exec("set names utf8");
