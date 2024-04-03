@@ -9,8 +9,6 @@ class Usuario {
        $this->conn = connection::dbConnection();    
     }
 
-    //GET USAURIOS DE LA BD DE USUARIO.
-
     public function getUsuarios() {
         $sql = "SELECT * FROM usuario";
         $resultado = $this->conn->query($sql);
@@ -78,7 +76,20 @@ class Cliente {
         } else {
             echo json_encode(array('mensaje' => 'No se encontraron clientes'));
         }
-    }    
+    }
+    
+    public function postCliente($nombre, $apellidos, $email, $telefono) {
+        $sql = "INSERT INTO cliente (nombre, apellidos, email, telefono) VALUES (?, ?, ?, ?)";
+        
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("ssss", $nombre, $apellidos, $email, $telefono);
+        
+        if ($statement->execute()) {
+            echo json_encode(array('mensaje' => 'Cliente registrado correctamente'));
+        } else {
+            echo json_encode(array('mensaje' => 'Error al registrar cliente: ' . $statement->error));
+        }
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -92,5 +103,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $cliente = new Cliente();
         $cliente->getClientes();
     }
+}else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombre'], $_POST['apellidos'], $_POST['email'], $_POST['telefono'])) {
+    $nombre = $_POST['nombre'];
+    $apellidos = $_POST['apellidos'];
+    $email = $_POST['email'];
+    $telefono = $_POST['telefono'];
+    $cliente = new Cliente(); 
+    $cliente->postCliente($nombre, $apellidos, $email, $telefono);
 }
-

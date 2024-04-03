@@ -22,6 +22,7 @@
                 <li><a href="#" onclick="showContenido('productos')">Productos</a></li>
                 <li><a href="#" onclick="showContenido('')">Citas</a></li>
                 <li><a href="#" onclick="showContenido('clientes')">Clientes</a></li>
+                <li><a href="#" onclick="showContenido('carrito')">Carrito</a></li>
             </ul>
         </nav>
     </header>
@@ -84,6 +85,9 @@
         <div id="productos" class="container" style="display: none;">
         </div><br>
         
+        <div id="clientes" class="container" style="display: none;">
+        </div><br>
+
         <div id="clientes" class="container" style="display: none;">
         </div><br>
 
