@@ -96,8 +96,8 @@
                     <input type="text" class="form-control" id="nombre" required>
                 </div>
                 <div class="form-group">
-                    <label for="apellido">Apellidos:</label>
-                    <input type="text" class="form-control" id="apellido" required>
+                    <label for="apellidos">Apellidos:</label>
+                    <input type="text" class="form-control" id="apellidos" required>
                 </div>
                 <div class="form-group">
                     <label for="email">Correo Electrónico:</label>
@@ -107,7 +107,7 @@
                     <label for="telefono">Teléfono:</label>
                     <input type="tel" class="form-control" id="telefono" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Registrar Cliente</button>
+                <button id="btnAgregarCliente" type="submit" class="btn btn-primary">Registrar Cliente</button>
             </form>
         </div>
 

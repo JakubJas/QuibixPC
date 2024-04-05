@@ -115,9 +115,11 @@ function getClientes() {
             tabla.append(cuerpo);
             
             $('#clientes').append(tabla);
+            
             var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nuevo Cliente');
             $('#clientes').append(botonMostrarFormulario);
             botonMostrarFormulario.click(function() {
+                $('#clientes').hide();
                 $('#nuevoCliente').show();
             });
         },
@@ -138,8 +140,6 @@ $(document).ready(function() {
 });
 
 function postCliente() {
-    $('#formularioCliente').submit(function(event) {
-        event.preventDefault(); 
 
         var nombre = $('#nombre').val();
         var apellido = $('#apellido').val();
@@ -158,13 +158,21 @@ function postCliente() {
             },
             success: function(response) {
                 alert('Cliente registrado con éxito');
-                window.location.href = '../Vistas/main.php';
+                console.log('Datos eviados:', response)
+
             },
             error: function(xhr, status, error) {
                 console.error('Error al registrar cliente:', error);
                 alert('Error al registrar cliente. Mira la consola para más detalles sobre el error.');
             }
         });
-    });
 }
+
+$(document).ready(function() {
+    // Agrega un controlador de eventos al botón btnAgregarCliente
+    $('#btnAgregarCliente').click(function() {
+        // Llama a la función postCliente() cuando se hace clic en el botón
+        postCliente();
+    });
+});
 
