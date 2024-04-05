@@ -22,7 +22,7 @@ function showContenido(seccion) {
 function getProductos() {
 
     $.ajax({
-        url: 'http://localhost/ProyectoQuibix/QuibixPC/conexiones/api.php/Producto',
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Producto',
         type: 'GET',
         dataType: 'json',
         success: function(response) {
@@ -30,6 +30,7 @@ function getProductos() {
             console.log(response);
             
             $('#clientes').hide();
+            $('#nuevoCliente').hide();
             $('#productos').empty();
 
             $('#productos').append($('<h2>').text('Productos'));
@@ -75,13 +76,14 @@ function getProductos() {
 
 function getClientes() {
     $.ajax({
-        url: 'http://localhost/ProyectoQuibix/QuibixPC/conexiones/api.php/Cliente',
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
         type: 'GET',
         dataType: 'json',
         success: function(response) {
             console.log('Datos recibidos:', response);
             
             $('#productos').hide();
+            $('#nuevoCliente').hide();
             $('#clientes').empty();
 
             $('#clientes').append($('<h2>').text('Clientes'));
@@ -113,12 +115,27 @@ function getClientes() {
             tabla.append(cuerpo);
             
             $('#clientes').append(tabla);
+            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nuevo Cliente');
+            $('#clientes').append(botonMostrarFormulario);
+            botonMostrarFormulario.click(function() {
+                $('#nuevoCliente').show();
+            });
         },
         error: function(xhr, status, error) {
             console.error('Error al obtener clientes:', error);
         }
     });
 }
+
+$(document).ready(function() {
+    $('#mostrarFormulario').click(function() {
+        $('#productos').hide();
+        $('#citas').hide();
+        $('#clientes').hide();
+        $('#carrito').hide();
+        $('#nuevoCliente').show();
+    });
+});
 
 function postCliente() {
     $('#formularioCliente').submit(function(event) {
@@ -130,7 +147,7 @@ function postCliente() {
         var telefono = $('#telefono').val();
 
         $.ajax({
-            url: 'http://localhost/ProyectoQuibix/QuibixPC/conexiones/api.php/Cliente',
+            url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
             type: 'POST',
             dataType: 'json',
             data: {
@@ -141,7 +158,6 @@ function postCliente() {
             },
             success: function(response) {
                 alert('Cliente registrado con éxito');
-                // Si deseamos tambien podemos reedirigir a menu.php
                 window.location.href = '../Vistas/main.php';
             },
             error: function(xhr, status, error) {

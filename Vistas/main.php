@@ -88,8 +88,28 @@
         <div id="clientes" class="container" style="display: none;">
         </div><br>
 
-        <div id="clientes" class="container" style="display: none;">
-        </div><br>
+        <div id="nuevoCliente" class="container" style="display: none;">
+            <h2>Agregar Nuevo Cliente</h2>
+            <form id="formularioCliente">
+                <div class="form-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" class="form-control" id="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="apellido">Apellidos:</label>
+                    <input type="text" class="form-control" id="apellido" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Correo Electrónico:</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono:</label>
+                    <input type="tel" class="form-control" id="telefono" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Registrar Cliente</button>
+            </form>
+        </div>
 
     </div>
 

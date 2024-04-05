@@ -93,13 +93,13 @@ class Cliente {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    if ($_SERVER['REQUEST_URI'] === '/ProyectoQuibix/QuibixPC/conexiones/api.php/Usuario') {
+    if ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Usuario') {
         $usuario = new Usuario();
         $usuario->getUsuarios();
-    } elseif ($_SERVER['REQUEST_URI'] === '/ProyectoQuibix/QuibixPC/conexiones/api.php/Producto') {
+    } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Producto') {
         $producto = new Producto();
         $producto->getProductos();
-    } elseif ($_SERVER['REQUEST_URI'] === '/ProyectoQuibix/QuibixPC/conexiones/api.php/Cliente') {
+    } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Cliente') {
         $cliente = new Cliente();
         $cliente->getClientes();
     }
