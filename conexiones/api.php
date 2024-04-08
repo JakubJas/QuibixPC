@@ -85,9 +85,45 @@ class Cliente {
         $statement->bind_param("ssss", $nombre, $apellidos, $email, $telefono);
         
         if ($statement->execute()) {
+            header('Content-Type: application/json');
             echo json_encode(array('mensaje' => 'Cliente registrado correctamente'));
         } else {
+            header('Content-Type: application/json');
             echo json_encode(array('mensaje' => 'Error al registrar cliente: ' . $statement->error));
+        }
+    }
+
+    public function deleteCliente($id) {
+        $sql = "DELETE FROM cliente WHERE id = ?";
+        
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("i", $id);
+        
+        if ($statement->execute()) {
+            header('Content-Type: application/json', true, 200);
+            echo json_encode(array('mensaje' => 'Cliente eliminado correctamente'));
+        } else {
+            header('Content-Type: application/json', true, 500);
+            echo json_encode(array('mensaje' => 'Error al eliminar cliente: ' . $statement->error));
+        }
+    }
+
+    public function getClientePorId($clienteId) {
+        $sql = "SELECT id, nombre, apellidos, email, telefono FROM cliente WHERE id = ?";
+    
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("i", $clienteId);
+        $statement->execute();
+        
+        $resultado = $statement->get_result();
+        
+        if ($resultado->num_rows > 0) {
+            $cliente = $resultado->fetch_assoc();
+            header('Content-Type: application/json');
+            echo json_encode($cliente);
+        } else {
+            header('Content-Type: application/json', true, 404);
+            echo json_encode(array('mensaje' => 'Cliente no encontrado'));
         }
     }
 }
@@ -103,11 +139,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $cliente = new Cliente();
         $cliente->getClientes();
     }
-}else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombre'], $_POST['apellidos'], $_POST['email'], $_POST['telefono'])) {
+} else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombre'], $_POST['apellidos'], $_POST['email'], $_POST['telefono'])) {
     $nombre = $_POST['nombre'];
     $apellidos = $_POST['apellidos'];
     $email = $_POST['email'];
     $telefono = $_POST['telefono'];
     $cliente = new Cliente(); 
     $cliente->postCliente($nombre, $apellidos, $email, $telefono);
+} else if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
+    $clienteId = end($uriSegments);
+
+    if (is_numeric($clienteId)) {
+        $cliente = new Cliente();
+        $cliente->deleteCliente($clienteId);
+    } else {
+        header('Content-Type: application/json', true, 400);
+        echo json_encode(array('mensaje' => 'ID de cliente no válido'));
+    }
+} if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    // Verifica si la URI contiene /Cliente/ID
+    $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
+    $clienteId = end($uriSegments);
+    
+    // Si el último segmento de la URI es un número (ID de cliente)
+    if (is_numeric($clienteId)) {
+        $cliente = new Cliente();
+        // Llama a una función para obtener los detalles del cliente por su ID
+        $cliente->getClientePorId($clienteId);
+    }
 }

@@ -31,6 +31,7 @@ function getProductos() {
             
             $('#clientes').hide();
             $('#nuevoCliente').hide();
+            $('#clienteExtenso').hide();
             $('#productos').empty();
 
             $('#productos').append($('<h2>').text('Productos'));
@@ -58,7 +59,7 @@ function getProductos() {
                 var cantidadInput = $('<input>').attr('type', 'number').attr('min', 1).attr('max', producto.stock).val(1);
                 row.append($('<td>').append(cantidadInput));
                 
-                var botonAgregar = $('<button>').text('Agregar al carrito').click(function() {
+                var botonAgregar = $('<button>').addClass('btn btn-primary').text('Agregar al carrito').click(function() {
                     postAlCarrito(producto, cantidadInput.val());
                 });
                 row.append($('<td>').append(botonAgregar));
@@ -84,6 +85,7 @@ function getClientes() {
             
             $('#productos').hide();
             $('#nuevoCliente').hide();
+            $('#clienteExtenso').hide();
             $('#clientes').empty();
 
             $('#clientes').append($('<h2>').text('Clientes'));
@@ -110,10 +112,18 @@ function getClientes() {
                     $('<td>').text(cliente.email),
                     $('<td>').text(cliente.telefono)
                 );
+                var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
+                    deleteCliente(cliente.id);
+                });
+                fila.append($('<td>').append(botonEliminar));
+
+                var botonCliente = $('<button>').addClass('btn btn-primary btnCliente').text('Cliente').data('id', cliente.id);
+                fila.append($('<td>').append(botonCliente));
+
                 cuerpo.append(fila);
             });
+
             tabla.append(cuerpo);
-            
             $('#clientes').append(tabla);
             
             var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nuevo Cliente');
@@ -129,50 +139,165 @@ function getClientes() {
     });
 }
 
+// Mostrar el formulario de registro cliente
 $(document).ready(function() {
-    $('#mostrarFormulario').click(function() {
+    $('#clienteExtenso').click(function() {
         $('#productos').hide();
         $('#citas').hide();
         $('#clientes').hide();
         $('#carrito').hide();
+        $('#clienteExtenso').hide();
         $('#nuevoCliente').show();
+    });
+
+    // Agregar controlador de eventos para el botón "Cliente"
+    $('#clientes').on('click', '.btnCliente', function() {
+        // Obtener el ID del cliente desde los datos del botón
+        var clienteId = $(this).data('id');
+        // Llamar a la función getCliente para obtener los detalles del cliente
+        getCliente(clienteId);
     });
 });
 
+function getCliente(clienteId) {
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + clienteId,
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            console.log('Detalles del cliente:', response);
+            mostrarDetallesCliente(response);
+
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al obtener detalles del cliente:', error);
+        }
+    });
+}
+
+function mostrarDetallesCliente(cliente) {
+    $('#clientes').hide();
+    $('#productos').hide();
+    $('#citas').hide();
+    $('#carrito').hide();
+    $('#clienteExtenso').show();
+
+    // Crea un formulario para mostrar los detalles del cliente
+    var formulario = $('<form>').addClass('form');
+
+    // Agrega campos de solo lectura para mostrar los detalles del cliente
+    formulario.append($('<div>').addClass('form-group').attr('disabled', true).append(
+        $('<label>').text('ID:').attr('disabled', true),
+        $('<input>').attr('type', 'text').attr('readonly', true).attr('disabled', true).addClass('form-control').val(cliente.id)
+    ));
+
+    formulario.append($('<div>').addClass('form-group').attr('disabled', true).append(
+        $('<label>').text('Nombre:').attr('disabled', true),
+        $('<input>').attr('type', 'text').attr('readonly', true).attr('disabled', true).addClass('form-control').val(cliente.nombre)
+    ));
+
+    formulario.append($('<div>').addClass('form-group').attr('disabled', true).append(
+        $('<label>').text('Apellidos:').attr('disabled', true),
+        $('<input>').attr('type', 'text').attr('readonly', true).attr('disabled', true).addClass('form-control').val(cliente.apellidos)
+    ));
+
+    formulario.append($('<div>').addClass('form-group').attr('disabled', true).append(
+        $('<label>').text('Correo Electrónico:').attr('disabled', true),
+        $('<input>').attr('type', 'email').attr('readonly', true).attr('disabled', true).addClass('form-control').val(cliente.email)
+    ));
+
+    formulario.append($('<div>').addClass('form-group').attr('disabled', true).append(
+        $('<label>').text('Teléfono:').attr('disabled', true),
+        $('<input>').attr('type', 'tel').attr('readonly', true).attr('disabled', true).addClass('form-control').val(cliente.telefono)
+    ));
+
+    var botonEditar = $('<button>').addClass('btn btn-primary').text('Editar').click(function() {
+        editarCliente(cliente);
+    });
+    formulario.append($('<div>').addClass('form-group').append(botonEditar));
+
+    $('#clienteExtenso').empty();
+    $('#clienteExtenso').append(formulario);
+
+}
+
+
+
+
 function postCliente() {
+    var nombre = $('#nombre').val();
+    var apellidos = $('#apellidos').val();
+    var email = $('#email').val();
+    var telefono = $('#telefono').val();
 
-        var nombre = $('#nombre').val();
-        var apellido = $('#apellido').val();
-        var email = $('#email').val();
-        var telefono = $('#telefono').val();
+    if (nombre === '' || apellidos === '' || email === '' || telefono === '') {
+        alert('Por favor, completa todos los campos.');
+        return;
+    }
 
-        $.ajax({
-            url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                nombre: nombre,
-                apellido: apellido,
-                email: email,
-                telefono: telefono
-            },
-            success: function(response) {
-                alert('Cliente registrado con éxito');
-                console.log('Datos eviados:', response)
+    if (!isValidEmail(email)) {
+        alert('Por favor, introduce un correo electrónico válido.');
+        return;
+    }
 
-            },
-            error: function(xhr, status, error) {
-                console.error('Error al registrar cliente:', error);
-                alert('Error al registrar cliente. Mira la consola para más detalles sobre el error.');
-            }
-        });
+    if (!isValidPhoneNumber(telefono)) {
+        alert('Por favor, introduce un número de teléfono válido.');
+        return; 
+    }
+
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            nombre: nombre,
+            apellidos: apellidos,
+            email: email,
+            telefono: telefono
+        },
+        success: function(response) {
+            alert('Cliente registrado con éxito');
+            console.log('Datos enviados:', response);
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al registrar cliente:', error);
+            console.log('Respuesta del servidor:', xhr.responseText);
+            alert('Error al registrar cliente');
+        }
+    });
+}
+
+// Validación del Email
+function isValidEmail(email) {
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+// Validacion numero TLF
+function isValidPhoneNumber(telefono) {
+    var phoneRegex = /^\d{9}$/;
+    return phoneRegex.test(telefono);
 }
 
 $(document).ready(function() {
-    // Agrega un controlador de eventos al botón btnAgregarCliente
     $('#btnAgregarCliente').click(function() {
-        // Llama a la función postCliente() cuando se hace clic en el botón
         postCliente();
     });
 });
 
+function deleteCliente(id) {
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + id,
+        type: 'DELETE',
+        dataType: 'json',
+        success: function(response) {
+            alert('Cliente eliminado correctamente');
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al eliminar cliente:', error);
+            alert('Error al eliminar cliente. Mira la consola para más detalles sobre el error.');
+        }
+    });
+}
