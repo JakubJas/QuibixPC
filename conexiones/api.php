@@ -126,6 +126,21 @@ class Cliente {
             echo json_encode(array('mensaje' => 'Cliente no encontrado'));
         }
     }
+
+    public function putCliente($id, $nombre, $apellidos, $email, $telefono) {
+        $sql = "UPDATE cliente SET nombre = ?, apellidos = ?, email = ?, telefono = ? WHERE id = ?";
+        
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("ssssi", $nombre, $apellidos, $email, $telefono, $id);
+        
+        if ($statement->execute()) {
+            header('Content-Type: application/json', true, 200);
+            echo json_encode(array('mensaje' => 'Cliente actualizado correctamente'));
+        } else {
+            header('Content-Type: application/json', true, 500);
+            echo json_encode(array('mensaje' => 'Error al actualizar cliente: ' . $statement->error));
+        }
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -138,6 +153,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Cliente') {
         $cliente = new Cliente();
         $cliente->getClientes();
+    } else {
+        // Verifica si la URI contiene /Cliente/ID
+        $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
+        $clienteId = end($uriSegments);
+        
+        // Si el último segmento de la URI es un número (ID de cliente)
+        if (is_numeric($clienteId)) {
+            $cliente = new Cliente();
+            // Llama a una función para obtener los detalles del cliente por su ID
+            $cliente->getClientePorId($clienteId);
+        }
     }
 } else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nombre'], $_POST['apellidos'], $_POST['email'], $_POST['telefono'])) {
     $nombre = $_POST['nombre'];
@@ -157,15 +183,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         header('Content-Type: application/json', true, 400);
         echo json_encode(array('mensaje' => 'ID de cliente no válido'));
     }
-} if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // Verifica si la URI contiene /Cliente/ID
+} else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    // Obtener el ID del cliente de la URI
     $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
     $clienteId = end($uriSegments);
-    
-    // Si el último segmento de la URI es un número (ID de cliente)
+
+    // Verificar si el ID del cliente es numérico
     if (is_numeric($clienteId)) {
-        $cliente = new Cliente();
-        // Llama a una función para obtener los detalles del cliente por su ID
-        $cliente->getClientePorId($clienteId);
+        // Obtener los datos del cuerpo de la solicitud
+        $datosCliente = json_decode(file_get_contents("php://input"), true);
+        
+        // Verificar si se proporcionaron todos los datos necesarios
+        if (isset($datosCliente['nombre'], $datosCliente['apellidos'], $datosCliente['email'], $datosCliente['telefono'])) {
+            // Extraer los datos del cliente del cuerpo de la solicitud
+            $nombre = $datosCliente['nombre'];
+            $apellidos = $datosCliente['apellidos'];
+            $email = $datosCliente['email'];
+            $telefono = $datosCliente['telefono'];
+            
+            // Llamar a la función putCliente para actualizar el cliente
+            $cliente = new Cliente();
+            $cliente->putCliente($clienteId, $nombre, $apellidos, $email, $telefono);
+        } else {
+            header('Content-Type: application/json', true, 400);
+            echo json_encode(array('mensaje' => 'Datos incompletos en la solicitud'));
+        }
+    } else {
+        header('Content-Type: application/json', true, 400);
+        echo json_encode(array('mensaje' => 'ID de cliente no válido'));
     }
 }
