@@ -11,7 +11,10 @@ function showContenido(seccion) {
             getClientes();
             break;
         case 'carrito':
-            getClientes();
+            getCarrito();
+            break;
+        case 'citas':
+            getCitas();
             break;
         default:
             break;
@@ -32,6 +35,7 @@ function getProductos() {
             $('#clientes').hide();
             $('#nuevoCliente').hide();
             $('#clienteExtenso').hide();
+            $('#clienteEditar').hide();
             $('#productos').empty();
 
             $('#productos').append($('<h2>').text('Productos'));
@@ -75,6 +79,7 @@ function getProductos() {
     });
 }
 
+// Mostrar todos los clientes 
 function getClientes() {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
@@ -86,6 +91,7 @@ function getClientes() {
             $('#productos').hide();
             $('#nuevoCliente').hide();
             $('#clienteExtenso').hide();
+            $('#clienteEditar').hide();
             $('#clientes').empty();
 
             $('#clientes').append($('<h2>').text('Clientes'));
@@ -139,26 +145,7 @@ function getClientes() {
     });
 }
 
-// Mostrar el formulario de registro cliente
-$(document).ready(function() {
-    $('#clienteExtenso').click(function() {
-        $('#productos').hide();
-        $('#citas').hide();
-        $('#clientes').hide();
-        $('#carrito').hide();
-        $('#clienteExtenso').hide();
-        $('#nuevoCliente').show();
-    });
-
-    // Agregar controlador de eventos para el botón "Cliente"
-    $('#clientes').on('click', '.btnCliente', function() {
-        // Obtener el ID del cliente desde los datos del botón
-        var clienteId = $(this).data('id');
-        // Llamar a la función getCliente para obtener los detalles del cliente
-        getCliente(clienteId);
-    });
-});
-
+// Recopila los datos de un cliente
 function getCliente(clienteId) {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + clienteId,
@@ -166,7 +153,7 @@ function getCliente(clienteId) {
         dataType: 'json',
         success: function(response) {
             console.log('Detalles del cliente:', response);
-            mostrarDetallesCliente(response);
+            showDetallesCliente(response);
 
         },
         error: function(xhr, status, error) {
@@ -175,17 +162,23 @@ function getCliente(clienteId) {
     });
 }
 
-function mostrarDetallesCliente(cliente) {
+$(document).ready(function() {
+    $('#clientes').on('click', '.btnCliente', function() {
+        var clienteId = $(this).data('id');
+        getCliente(clienteId);
+    });
+});
+
+// Muestra un cliente
+function showDetallesCliente(cliente) {
     $('#clientes').hide();
     $('#productos').hide();
     $('#citas').hide();
     $('#carrito').hide();
     $('#clienteExtenso').show();
 
-    // Crea un formulario para mostrar los detalles del cliente
     var formulario = $('<form>').addClass('form');
 
-    // Agrega campos de solo lectura para mostrar los detalles del cliente
     formulario.append($('<div>').addClass('form-group').attr('disabled', true).append(
         $('<label>').text('ID:').attr('disabled', true),
         $('<input>').attr('type', 'text').attr('readonly', true).attr('disabled', true).addClass('form-control').val(cliente.id)
@@ -221,9 +214,98 @@ function mostrarDetallesCliente(cliente) {
 
 }
 
+// Formulario editar cliente
+function editarCliente(cliente) {
+    $('#clientes').hide();
+    $('#productos').hide();
+    $('#citas').hide();
+    $('#carrito').hide();
+    $('#clienteExtenso').hide();
+    $('#clienteEditar').show();
+
+    var formulario = $('<form>').addClass('form');
+
+    formulario.append($('<div>').addClass('form-group').append(
+        $('<label>').text('ID:'),
+        $('<input>').attr('type', 'text').addClass('form-control').val(cliente.id).prop('readonly', true)
+    ));
+
+    formulario.append($('<div>').addClass('form-group').append(
+        $('<label>').text('Nombre:'),
+        $('<input>').attr('type', 'text').addClass('form-control').val(cliente.nombre)
+    ));
+
+    formulario.append($('<div>').addClass('form-group').append(
+        $('<label>').text('Apellidos:'),
+        $('<input>').attr('type', 'text').addClass('form-control').val(cliente.apellidos)
+    ));
+
+    formulario.append($('<div>').addClass('form-group').append(
+        $('<label>').text('Correo Electrónico:'),
+        $('<input>').attr('type', 'email').addClass('form-control').val(cliente.email)
+    ));
+
+    formulario.append($('<div>').addClass('form-group').append(
+        $('<label>').text('Teléfono:'),
+        $('<input>').attr('type', 'tel').addClass('form-control').val(cliente.telefono)
+    ));
+
+    var botonGuardar = $('<button>').addClass('btn btn-primary').text('Guardar Cambios').click(function() {
+        putCliente(cliente);
+    });
+    formulario.append($('<div>').addClass('form-group').append(botonGuardar));
+
+    $('#clienteEditar').empty().append(formulario);
+}
+
+// Mandar datos nuevos del cliente
+function putCliente(clienteId) {
+    
+    var nombre = $('#clienteEditar #nombre').val();
+    var apellidos = $('#clienteEditar #apellidos').val();
+    var email = $('#clienteEditar #email').val();
+    var telefono = $('#clienteEditar #telefono').val();
+
+    if (nombre === '' || apellidos === '' || email === '' || telefono === '') {
+        alert('Por favor, completa todos los campos.');
+        return;
+    }
+
+    if (!isValidEmail(email)) {
+        alert('Por favor, introduce un correo electrónico válido.');
+        return;
+    }
+
+    if (!isValidPhoneNumber(telefono)) {
+        alert('Por favor, introduce un número de teléfono válido.');
+        return; 
+    }
+
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + clienteId,
+        type: 'PUT',
+        dataType: 'json',
+        data: {
+            nombre: nombre,
+            apellidos: apellidos,
+            email: email,
+            telefono: telefono
+        },
+        success: function(response) {
+            alert('Cliente editado con éxito');
+            console.log('Datos enviados:', response);
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al editar cliente:', error);
+            console.log('Respuesta del servidor:', xhr.responseText);
+            alert('Error al editar cliente');
+        }
+    });
+}
 
 
-
+// Crea un nuevo registro de cliente
 function postCliente() {
     var nombre = $('#nombre').val();
     var apellidos = $('#apellidos').val();
@@ -286,6 +368,7 @@ $(document).ready(function() {
     });
 });
 
+// Borra al cliente del registro de BD
 function deleteCliente(id) {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + id,

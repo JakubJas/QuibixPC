@@ -184,24 +184,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         echo json_encode(array('mensaje' => 'ID de cliente no válido'));
     }
 } else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
-    // Obtener el ID del cliente de la URI
     $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
     $clienteId = end($uriSegments);
 
-    // Verificar si el ID del cliente es numérico
     if (is_numeric($clienteId)) {
-        // Obtener los datos del cuerpo de la solicitud
         $datosCliente = json_decode(file_get_contents("php://input"), true);
         
-        // Verificar si se proporcionaron todos los datos necesarios
         if (isset($datosCliente['nombre'], $datosCliente['apellidos'], $datosCliente['email'], $datosCliente['telefono'])) {
-            // Extraer los datos del cliente del cuerpo de la solicitud
+
             $nombre = $datosCliente['nombre'];
             $apellidos = $datosCliente['apellidos'];
             $email = $datosCliente['email'];
             $telefono = $datosCliente['telefono'];
             
-            // Llamar a la función putCliente para actualizar el cliente
             $cliente = new Cliente();
             $cliente->putCliente($clienteId, $nombre, $apellidos, $email, $telefono);
         } else {
