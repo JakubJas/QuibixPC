@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS estado(
 );
 CREATE TABLE IF NOT EXISTS carrito(
 	id INT AUTO_INCREMENT PRIMARY KEY,
+    clienteID INT,
     productoID INT,
     estadoID INT,
     cantidad INT(20),
@@ -75,8 +76,8 @@ INSERT IGNORE INTO usuario(nombre, apellidos, clave, email, telefono) VALUES(
 ALTER TABLE cliente
 	ADD UNIQUE(apellidos, email, telefono);
 INSERT IGNORE INTO cliente(nombre, apellidos, email, telefono) VALUES(
-	'Juan', 'Gonzales', 'JG@mail,com', 663438899),(
-    'Pedro', 'Gorro', 'PG@mail,com', 663438899);    
+	'Juan', 'Gonzales', 'JG@mail.com', 663438899),(
+    'Pedro', 'Gorro', 'PG@mail.com', 663438899);    
     
 ALTER TABLE servicio
 	ADD UNIQUE(nombre_servicio);
@@ -127,6 +128,7 @@ ALTER TABLE cita
     ADD CONSTRAINT FK_cita_peluquero FOREIGN KEY (peluqueroID) REFERENCES peluquero(ID) ON DELETE CASCADE;
 
 ALTER TABLE carrito
+	ADD CONSTRAINT FK_carrito_cliente FOREIGN KEY (clienteID) REFERENCES cliente(ID) ON DELETE CASCADE,
 	ADD CONSTRAINT FK_carrito_producto FOREIGN KEY (productoID) REFERENCES producto(ID) ON DELETE CASCADE,
     ADD CONSTRAINT FK_carrito_estado FOREIGN KEY (estadoID) REFERENCES estado(ID) ON DELETE CASCADE;
     
