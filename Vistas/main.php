@@ -82,9 +82,6 @@
         
         </div>
         
-        <div id="productos" class="container" style="display: none;">
-        </div><br>
-        
         <div id="clientes" class="container" style="display: none;">
         </div><br>
 
@@ -92,8 +89,8 @@
             <h2>Agregar Nuevo Cliente</h2>
             <form id="formularioCliente">
                 <div class="form-group">
-                    <label for="nombre">Nombre:</label>
-                    <input type="text" class="form-control" id="nombre" required>
+                    <label for="nombreCliente">Nombre:</label>
+                    <input type="text" class="form-control" id="nombreCliente" required>
                 </div>
                 <div class="form-group">
                     <label for="apellidos">Apellidos:</label>
@@ -116,6 +113,51 @@
 
         <div id="clienteEditar" class="container" style="display: none;">
         </div><br>
+
+        <div id="productos" class="container" style="display: none;">
+        </div><br>
+
+        <div id="nuevoProducto" class="container" style="display: none;">
+            <h2>Agregar Nuevo Producto</h2>
+            <form id="formularioProducto">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="sku">SKU:</label>
+                            <input type="text" class="form-control" id="sku" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nombreProducto">Nombre:</label>
+                            <input type="text" class="form-control" id="nombreProducto" name="nombreProducto" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="descripcion">Descripción:</label>
+                            <textarea id="descripcion" class="form-control" required></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="stock">Stock:</label>
+                            <input type="number" class="form-control" id="stock" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="precio">Precio:</label>
+                            <input type="number" step="any" class="form-control" id="precio" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoria">Categoría:</label>
+                            <select class="form-control" id="categoria" required>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button id="btnAgregarProducto" type="submit" class="btn btn-primary">Crear Producto</button>
+            </form>
+        </div>
+
+        <div id="carrito" class="container" style="display: none;">
+        </div><br>
+
 
     </div>
 
