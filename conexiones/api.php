@@ -156,29 +156,6 @@ class Producto {
         }
     }
     
-    
-    public function putProducto($id, $sku, $nombre, $descripcion, $categoriaID, $stock, $precio) {
-        $categoriaExistente = $this->verificarCategoriaExistente($categoriaID);
-        if (!$categoriaExistente) {
-            header('Content-Type: application/json', true, 400);
-            echo json_encode(array('mensaje' => 'La categoría especificada no existe'));
-            return;
-        }
-    
-        $sql = "UPDATE producto SET sku = ?, nombre = ?, descripcion = ?, categoriaID = ?, stock = ?, precio = ? WHERE id = ?";
-        
-        $statement = $this->conn->prepare($sql);
-        $statement->bind_param("issiiii", $sku, $nombre, $descripcion, $categoriaID, $stock, $precio, $id);
-        
-        if ($statement->execute()) {
-            header('Content-Type: application/json', true, 200);
-            echo json_encode(array('mensaje' => 'Producto actualizado correctamente'));
-        } else {
-            header('Content-Type: application/json', true, 500);
-            echo json_encode(array('mensaje' => 'Error al actualizar producto: ' . $statement->error));
-        }
-    }
-    
     private function verificarCategoriaExistente($categoriaID) {
         $sql = "SELECT id FROM categoria WHERE id = ?";
         $statement = $this->conn->prepare($sql);
@@ -200,6 +177,26 @@ class Producto {
         } else {
             header('Content-Type: application/json', true, 500);
             echo json_encode(array('mensaje' => 'Error al eliminar producto: ' . $statement->error));
+        }
+    }
+
+    public function putStockProducto($productoID, $nuevoStock) {
+        // Preparar la consulta SQL para actualizar el stock del producto
+        $sql = "UPDATE producto SET stock = ? WHERE id = ?";
+        
+        // Preparar la declaración y enlazar los parámetros
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("ii", $nuevoStock, $productoID);
+        
+        // Ejecutar la consulta
+        if ($statement->execute()) {
+            // Devolver una respuesta JSON de éxito
+            header('Content-Type: application/json');
+            echo json_encode(array('mensaje' => 'Stock del producto actualizado correctamente'));
+        } else {
+            // Devolver una respuesta JSON de error
+            header('Content-Type: application/json', true, 500);
+            echo json_encode(array('error' => 'Error al actualizar el stock del producto: ' . $statement->error));
         }
     }
     
@@ -323,6 +320,37 @@ class Carrito{
         $statement->store_result();
         return $statement->num_rows > 0;
     }
+
+    public function deleteCarrito($id) {
+        // Obtener la cantidad eliminada del carrito y el ID del producto asociado
+        $sql = "SELECT productoID, cantidad FROM carrito WHERE id = ?";
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("i", $id);
+        $statement->execute();
+        $statement->bind_result($productoID, $cantidadEliminada);
+        $statement->fetch();
+        $statement->close();
+        
+        // Eliminar el elemento del carrito
+        $sql = "DELETE FROM carrito WHERE id = ?";
+        $statement = $this->conn->prepare($sql);
+        $statement->bind_param("i", $id);
+        
+        if ($statement->execute()) {
+            // Revertir la cantidad eliminada del carrito al stock del producto
+            $sql = "UPDATE producto SET stock = stock + ? WHERE id = ?";
+            $statement = $this->conn->prepare($sql);
+            $statement->bind_param("ii", $cantidadEliminada, $productoID);
+            $statement->execute();
+    
+            header('Content-Type: application/json', true, 200);
+            echo json_encode(array('mensaje' => 'Carrito eliminado correctamente'));
+        } else {
+            header('Content-Type: application/json', true, 500);
+            echo json_encode(array('mensaje' => 'Error al eliminar carrito: ' . $statement->error));
+        }
+    }
+    
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -381,29 +409,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $carrito = new Carrito();
         $carrito->postCarrito($clienteID, $productoID, $estadoID, $cantidad, $precioTotal);
     }    
-} else if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+} if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
-    $clienteId = end($uriSegments);
+    $lastSegment = end($uriSegments);
 
-    if (is_numeric($clienteId)) {
-        $datosCliente = json_decode(file_get_contents("php://input"), true);
-        
-        if (isset($datosCliente['nombreCliente'], $datosCliente['apellidos'], $datosCliente['email'], $datosCliente['telefono'])) {
-
-            $nombre = $datosCliente['nombreCliente'];
-            $apellidos = $datosCliente['apellidos'];
-            $email = $datosCliente['email'];
-            $telefono = $datosCliente['telefono'];
+    if (is_numeric($lastSegment)) {
+        // Verificar si la URI es para la actualización de un cliente
+        if (strpos($_SERVER['REQUEST_URI'], '/QuibixPC/conexiones/api.php/Cliente') !== false) {
+            // Procesar la actualización del cliente
+            $datosCliente = json_decode(file_get_contents("php://input"), true);
             
-            $cliente = new Cliente();
-            $cliente->putCliente($clienteId, $nombre, $apellidos, $email, $telefono);
+            if (isset($datosCliente['nombreCliente'], $datosCliente['apellidos'], $datosCliente['email'], $datosCliente['telefono'])) {
+                $nombre = $datosCliente['nombreCliente'];
+                $apellidos = $datosCliente['apellidos'];
+                $email = $datosCliente['email'];
+                $telefono = $datosCliente['telefono'];
+                
+                $cliente = new Cliente();
+                $cliente->putCliente($lastSegment, $nombre, $apellidos, $email, $telefono);
+            } else {
+                // Devolver un mensaje de error si faltan datos en la solicitud
+                header('Content-Type: application/json', true, 400);
+                echo json_encode(array('mensaje' => 'Datos incompletos en la solicitud'));
+            }
+        } elseif (strpos($_SERVER['REQUEST_URI'], '/QuibixPC/conexiones/api.php/Producto') !== false) {
+            // Procesar la actualización de stock del producto
+            parse_str(file_get_contents("php://input"), $putData);
+            $nuevoStock = $putData['nuevoStock'];
+
+            $producto = new Producto();
+            $producto->putStockProducto($lastSegment, $nuevoStock);
         } else {
+            // Devolver un mensaje de error si la URI no es reconocida
             header('Content-Type: application/json', true, 400);
-            echo json_encode(array('mensaje' => 'Datos incompletos en la solicitud'));
+            echo json_encode(array('mensaje' => 'URI no válida para solicitud PUT'));
         }
     } else {
+        // Devolver un mensaje de error si el último segmento de la URI no es numérico
         header('Content-Type: application/json', true, 400);
-        echo json_encode(array('mensaje' => 'ID de cliente no válido'));
+        echo json_encode(array('mensaje' => 'ID no válido en la URI'));
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
@@ -417,7 +461,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Producto/' . $lastSegment) {
             $producto = new Producto();
             $producto->deleteProducto($lastSegment);
-        } else {
+        } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Carrito/' . $lastSegment) {
+            $producto = new Carrito();
+            $producto->deleteCarrito($lastSegment);
+        }else {
             header('Content-Type: application/json', true, 400);
             echo json_encode(array('mensaje' => 'ID de cliente o producto no válido'));
         }

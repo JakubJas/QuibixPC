@@ -544,6 +544,7 @@ function getCarrito() {
             headerRow.append($('<th>').text('Estado'));
             headerRow.append($('<th>').text('Cantidad'));
             headerRow.append($('<th>').text('Precio Total'));
+            headerRow.append($('<th>').text('Acciones'));
             table.append(headerRow);
     
             $.each(response, function(index, carrito) {
@@ -554,6 +555,11 @@ function getCarrito() {
                 row.append($('<td>').text(carrito.estado));
                 row.append($('<td>').text(carrito.cantidad));
                 row.append($('<td>').text(carrito.precio_total));
+
+                var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
+                    deleteCarrito(carrito.id);
+                });
+                row.append($('<td>').append(botonEliminar));
                 table.append(row);
             });
     
@@ -580,6 +586,8 @@ function postAlCarrito(producto, clienteID, cantidad) {
         precioTotal: precioTotal
     };
 
+    var _this = this; // Guardar una referencia al objeto actual
+
     // Realizar la solicitud POST al servidor para agregar el producto al carrito
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito',
@@ -591,8 +599,8 @@ function postAlCarrito(producto, clienteID, cantidad) {
             console.log('Producto agregado al carrito:', response.mensaje);
 
             // Actualizar el stock del producto
-            //var nuevoStock = producto.stock - cantidad;
-            //actualizarStockProducto(producto.id, nuevoStock);
+            var nuevoStock = producto.stock - cantidad;
+            _this.putStockProducto(producto.id, nuevoStock); // Usar _this en lugar de this
         },
         error: function(xhr, status, error) {
             // Mostrar mensaje de error en la consola
@@ -601,7 +609,8 @@ function postAlCarrito(producto, clienteID, cantidad) {
     });
 }
 
-/*function actualizarStockProducto(productoID, nuevoStock) {
+
+function putStockProducto(productoID, nuevoStock) {
     // Datos del producto a enviar al servidor para actualizar el stock
     var datosStock = {
         productoID: productoID,
@@ -623,6 +632,22 @@ function postAlCarrito(producto, clienteID, cantidad) {
             console.error('Error al actualizar stock del producto:', error);
         }
     });
-}*/
+}
+
+function deleteCarrito(id) {
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito/' + id,
+        type: 'DELETE',
+        dataType: 'json',
+        success: function(response) {
+            alert('Producto eliminado del carrito correctamente');
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al eliminar del carrito:', error);
+            alert('Error al eliminar producto del carrito.');
+        }
+    });
+}
 
 
