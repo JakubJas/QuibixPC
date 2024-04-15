@@ -37,5 +37,21 @@ class login{
         header("Location: ../Vistas/login.php");
         exit();
     }
+
+    public function cerrarSesion() {
+        session_start();
+        session_unset();
+        session_destroy();
+        
+        // Devolver una respuesta JSON
+        header('Content-Type: application/json');
+        echo json_encode(array('mensaje' => 'Sesión cerrada correctamente'));
+        exit();
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/logout') {
+    $login = new login();
+    $login->cerrarSesion();
 }
 ?>

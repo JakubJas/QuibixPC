@@ -21,6 +21,8 @@ function showContenido(seccion) {
     }
 }
 
+// CLIENTES·······················································································
+
 // Mostrar todos los clientes 
 function getClientes() {
     $.ajax({
@@ -329,9 +331,9 @@ function deleteCliente(id) {
     });
 }
 
-//PRODUCTOS
+//PRODUCTOS································································································
 
-// Conseguir/Mostrar porductos
+// Conseguir/Mostrar porductos e cliente que va a comprar el producto
 function getProductos() {
     // Obtener lista de clientes
     $.ajax({
@@ -348,14 +350,13 @@ function getProductos() {
             $('#carrito').hide();
             $('#productos').empty();
 
-            // Llenar el select con los clientes
+            // Select con los clientes
             var selectClientes = $('<select>').addClass('form-control').attr('id', 'clienteSelect');
             $.each(clientes, function(index, cliente) {
                 var option = $('<option>').val(cliente.id).text(cliente.nombre + ' ' + cliente.apellidos);
                 selectClientes.append(option);
             });
 
-            // Agregar título y el select al div de productos
             $('#productos').append($('<h2>').text('Productos'));
             $('#productos').append($('<h5>').text('Los mejores productos para tu amigo canino'));
             $('#productos').append($('<label>').text('Cliente:'));
@@ -371,7 +372,6 @@ function getProductos() {
                 success: function(response) {
                     console.log(response);
                     
-                    // Crear tabla para mostrar los productos
                     var table = $('<table>').addClass('table'); 
                     var headerRow = $('<tr>');
                     headerRow.append($('<th>').text('Nombre'));
@@ -404,6 +404,7 @@ function getProductos() {
                         });
                         row.append($('<td>').append(botonAgregar));
 
+                        // Botón que elimina al producto
                         var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
                             deleteProducto(producto.id);
                         });
@@ -412,7 +413,6 @@ function getProductos() {
                         table.append(row);
                     });
 
-                    // Agregar la tabla al div de productos
                     $('#productos').append(table);
 
                     // Botón para mostrar el formulario de nuevo producto
@@ -491,7 +491,7 @@ function deleteProducto(id) {
     });
 }
 
-// Categoria
+// Carga categorias para el select en porductos y para otras funciones que se utilice
 function cargarCategorias() {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Categoria',
@@ -516,6 +516,9 @@ $(document).ready(function() {
     cargarCategorias();
 });
 
+// CARRITO························································································
+
+// Mostrar/Conseguir carrito
 function getCarrito() {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito',
@@ -575,10 +578,8 @@ function getCarrito() {
 }
 
 function postAlCarrito(producto, clienteID, cantidad) {
-    // Obtener el precio total multiplicando la cantidad por el precio del producto
     var precioTotal = cantidad * producto.precio;
 
-    // Datos del producto a enviar al servidor
     var datosProducto = {
         clienteID: clienteID,
         productoID: producto.id,
@@ -586,24 +587,21 @@ function postAlCarrito(producto, clienteID, cantidad) {
         precioTotal: precioTotal
     };
 
-    var _this = this; // Guardar una referencia al objeto actual
+    var _this = this;
 
-    // Realizar la solicitud POST al servidor para agregar el producto al carrito
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito',
         type: 'POST',
         dataType: 'json',
         data: datosProducto,
         success: function(response) {
-            // Mostrar mensaje de éxito en la consola
             console.log('Producto agregado al carrito:', response.mensaje);
+            alert("El producto se ha añadido correctamente")
 
-            // Actualizar el stock del producto
             var nuevoStock = producto.stock - cantidad;
-            _this.putStockProducto(producto.id, nuevoStock); // Usar _this en lugar de this
+            _this.putStockProducto(producto.id, nuevoStock);
         },
         error: function(xhr, status, error) {
-            // Mostrar mensaje de error en la consola
             console.error('Error al agregar producto al carrito:', error);
         }
     });
@@ -611,24 +609,21 @@ function postAlCarrito(producto, clienteID, cantidad) {
 
 
 function putStockProducto(productoID, nuevoStock) {
-    // Datos del producto a enviar al servidor para actualizar el stock
+
     var datosStock = {
         productoID: productoID,
         nuevoStock: nuevoStock
     };
 
-    // Realizar la solicitud PUT al servidor para actualizar el stock del producto
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Producto/' + productoID,
         type: 'PUT',
         dataType: 'json',
         data: datosStock,
         success: function(response) {
-            // Mostrar mensaje de éxito en la consola
             console.log('Stock actualizado:', response.mensaje);
         },
         error: function(xhr, status, error) {
-            // Mostrar mensaje de error en la consola
             console.error('Error al actualizar stock del producto:', error);
         }
     });

@@ -1,75 +1,100 @@
 *{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .bg_animate{
-    background: linear-gradient(to right, #66ff00, #03c222);
-    overflow: auto;
+  background: linear-gradient(to right, #66ff00, #03c222);
+  overflow: auto;
 }
 
 .logo{   
-    float: left;
-    background-image: url(../IMG_Web/Quibix_Logo.png);
-    height: 10vh;
-    width: 10vh;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 100%;
+  float: left;
+  margin-left: 10vh;
+  background-image: url(../IMG_Web/Quibix_Logo.png);
+  height: 10vh;
+  width: 10vh;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100%;
 }
 
-a{
-    text-decoration: none;
-    color: black;
-  }
-
-.ham{
-    float: right;
-    background-color: rgb(235, 192, 3);
-    background-image: url(../IMG_Web/ham.png);
-    height: 3vh;
-    width: 3vh;
-    display: flex;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 100%;
+.headMenu a{
+  text-decoration: none;
+  font-weight: bold;
+  color: rgb(0, 145, 255);
 }
 
-ul{
-    display: none;
-  }
+.headMenu a:hover{
+  background-color: rgb(66, 222, 183);
+  padding: 2vh;
+  border-radius: 5vh;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+}
+
+.listCenter{
+  display: flex;
+  justify-content: center;
+}
   
-input:checked  ~ ul{
-    display:block;
-    width: 10vh;
-    float: right;
+.headMenu{
+  text-align: center;
+  list-style: none;
+  padding: 0;
+  display: flex;
 }
 
-input {
-    display: none;
+.headMenu li{
+  margin: 3vh 10vh 0 0vh;
 }
 
-label {
-    box-sizing: border-box;
-    display: inline-block;
-    border: 1px solid black;
-    border-radius: 5px;
-    width: 50px;
-    height: 30px;
-    line-height: 30px;
-    font-weight: bold;
-    text-align: center;
-    user-select: none;
-  }
-
-  li {
-    display: block;
-    background: lightgrey;
-    margin: 0;
-    padding: 10px;
-    list-style: none;
-    border-bottom: 1px solid grey;
-  }
+h2{
+  margin-top: 5vh;
+}
  
 /************************************************************************************/
+
+footer{
+  background-color: black;
+  color: white;
+  width: 100%;
+  position: absolute;
+  margin-top: 12vh;
+}
+
+hr{
+  border-color: white;
+}
+
+h4{
+  text-align: center;
+}
+
+.logo2{   
+  float: left;
+  background-image: url(../IMG_Web/Quibix_LogoBN.png);
+  height: 10vh;
+  width: 10vh;
+  margin-top: 6vh;
+  margin-left: 15vh;
+  border-radius: 50px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+
+.footerMenu a{
+  color: white;
+}
+
+.footerMenu a:hover{
+  background-color: white;
+  padding: 1vh;
+  border-radius: 5vh;
+  color: black;
+  font-weight: bold;
+  text-decoration: none;
+}

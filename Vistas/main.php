@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="../Public/CSS/mainPref.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../JS/datos.js"></script>    
+    <script src="../JS/logout.js"></script>    
+
 
 </head>
 <body>
@@ -16,14 +18,15 @@
             <a href="main.php">
                 <div class="logo"></div>
             </a>
-            <input type="checkbox" id="menu">
-            <label for="menu" class="ham"></label>
-            <ul>
-                <li><a href="#" onclick="showContenido('productos')">Productos</a></li>
-                <li><a href="#" onclick="showContenido('')">Citas</a></li>
-                <li><a href="#" onclick="showContenido('clientes')">Clientes</a></li>
-                <li><a href="#" onclick="showContenido('carrito')">Carrito</a></li>
-            </ul>
+            <div class="listCenter">
+                <ul class="headMenu">
+                    <li><a href="#" onclick="showContenido('productos')">Productos</a></li>
+                    <li><a href="#" onclick="showContenido('')">Citas</a></li>
+                    <li><a href="#" onclick="showContenido('clientes')">Clientes</a></li>
+                    <li><a href="#" onclick="showContenido('carrito')">Carrito</a></li>
+                    <li><a href="#" onclick="cerrarSesion()">Logout</a></li>
+                </ul>
+            </div>
         </nav>
     </header>
     <div id="Principal" class="container">
@@ -162,7 +165,29 @@
     </div>
 
     <footer>
-
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h4>Contacto</h4>
+                    <hr>
+                    <p>Teléfono: +123456789</p>
+                    <p>Email: jakubj@gmail.com</p>
+                    <p>Dirección: C/ Secundino Delgado 9, San Bartolome de Tirajana, Las Palmas</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="logo2"></div>
+                </div>
+                <div class="col-md-4">
+                    <h4>Redes Sociales</h4>
+                    <hr>
+                    <ul class="list-inline footerMenu">
+                        <li class="list-inline-item"><a href="#">Facebook</a></li>
+                        <li class="list-inline-item"><a href="#">Twitter</a></li>
+                        <li class="list-inline-item"><a href="#">Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </footer>
 </body>
 </html>
