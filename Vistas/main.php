@@ -1,3 +1,12 @@
+<?php
+    session_start();
+    if (!isset($_SESSION['usuario_id'])) {
+    
+        header("Location: login.php");
+        exit();
+    }
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,8 +17,6 @@
     <link rel="stylesheet" href="../Public/CSS/mainPref.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../JS/datos.js"></script>    
-    <script src="../JS/logout.js"></script>    
-
 
 </head>
 <body>
@@ -24,7 +31,7 @@
                     <li><a href="#" onclick="showContenido('')">Citas</a></li>
                     <li><a href="#" onclick="showContenido('clientes')">Clientes</a></li>
                     <li><a href="#" onclick="showContenido('carrito')">Carrito</a></li>
-                    <li><a href="#" onclick="cerrarSesion()">Logout</a></li>
+                    <li><a href="../controller/logout.php">Logout</a></li>
                 </ul>
             </div>
         </nav>
