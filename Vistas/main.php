@@ -1,9 +1,17 @@
 <?php
+require_once '../conexiones/tokenGenerate.php';
+
     session_start();
-    if (!isset($_SESSION['usuario_id'])) {
     
+    if (!isset($_SESSION['usuario_id'])) {
         header("Location: login.php");
         exit();
+    }
+    $token = new Token();
+
+    if ($token->verificarToken($_SESSION['usuario_id'])) {
+    } else {
+        header("Location: ../Vistas/login.php");
     }
 ?>
 

@@ -5,7 +5,6 @@ require_once '../conexiones/tokenGenerate.php';
 class login{ 
 
     public function processLogin(){
-        session_start();
         $conn = connection::dbConnection();
     
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['loginBtn'])) {
@@ -30,6 +29,7 @@ class login{
 
                     session_start();
                     $_SESSION['usuario_id'] = $user_id;
+                    $_SESSION['token'] = $token;
     
                     header("Location: ../Vistas/main.php");
                     exit();
