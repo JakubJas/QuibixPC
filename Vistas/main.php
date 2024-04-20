@@ -21,8 +21,8 @@ require_once '../conexiones/tokenGenerate.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Principal</title>
-    <link rel="stylesheet" href="../Public/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../Public/CSS/mainPref.css">
+    <link rel="stylesheet" href="../Public/bootstrap/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../JS/datos.js"></script>    
 
@@ -46,7 +46,7 @@ require_once '../conexiones/tokenGenerate.php';
     </header>
     <div id="Principal" class="container">
         <div id="infoPelu" class="container">
-            
+            <br>
             <h2>Peluqueria canina</h2>
             <h5>Nuestros clientes mas fieles</h5>
             
@@ -54,44 +54,44 @@ require_once '../conexiones/tokenGenerate.php';
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <div class="img">
-                            <img src="../Public/IMG_Web/Big.jpeg" class="img-fluid">
+                            <img src="../Public/IMG_Web/Big.jpeg" class="bor-img img-fluid">
                             <p>Nico</p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="img">
-                            <img src="../Public/IMG_Web/Chiwi.jpeg" class="img-fluid">
+                            <img src="../Public/IMG_Web/Chiwi.jpeg" class="bor-img img-fluid">
                             <p>Pera</p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="img">
-                            <img src="../Public/IMG_Web/Pit.jpeg" class="img-fluid">
+                            <img src="../Public/IMG_Web/Pit.jpeg" class="bor-img img-fluid">
                             <p>Princesa</p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="img">
-                            <img src="../Public/IMG_Web/lab.jpeg" class="img-fluid">
+                            <img src="../Public/IMG_Web/lab.jpeg" class="bor-img img-fluid">
                             <p>Pepe</p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="img">
-                            <img src="../Public/IMG_Web/Nor.jpeg" class="img-fluid">
+                            <img src="../Public/IMG_Web/Nor.jpeg" class="bor-img img-fluid">
                             <p>Linda</p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <div class="img">
-                            <img src="../Public/IMG_Web/Husky.jpeg" class="img-fluid">
+                            <img src="../Public/IMG_Web/Husky.jpeg" class="bor-img img-fluid">
                             <p>Garchi</p>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3"></div>
                     <div class="col-md-4 mb-3">
                         <div class="img">
-                            <img src="../Public/IMG_Web/Frances.jpeg" class="img-fluid">
+                            <img src="../Public/IMG_Web/Frances.jpeg" class="bor-img img-fluid">
                             <p>Boby</p>
                         </div>
                     </div>

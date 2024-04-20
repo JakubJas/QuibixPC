@@ -13,14 +13,13 @@
         }
 
         public function insertarToken($usuarioID) {
-            $session_duration = 1*60;
-            $token = $this->generateToken(); // Generar el token
+            $session_duration = 2*60*60*24;
+            $token = $this->generateToken();
             
-            // Calcular el tiempo de expiración
+            
             $expiracion_timestamp = time() + $session_duration;
             $token_expiracion = date('Y-m-d H:i:s', $expiracion_timestamp);
             
-            // Preparar la consulta SQL
             $query = "INSERT INTO token (token, token_expiracion, usuarioID) VALUES (?, ?, ?)";
             $statement = $this->conexion->prepare($query);
             $statement->bind_param("ssi", $token, $token_expiracion, $usuarioID);
@@ -35,12 +34,9 @@
             $statement->bind_param("i", $usuarioID);
             $statement->execute();
     
-    
-    
             $result = $statement->get_result();
             if ($result->num_rows > 0) {
                 $row = $result->fetch_assoc();
-                $token = $row['token'];
                 $expiracion = $row['token_expiracion'];
     
                 if ($expiracion > $current_time) {

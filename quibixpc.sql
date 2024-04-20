@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS categoria(
 CREATE TABLE IF NOT EXISTS producto(
 	id INT AUTO_INCREMENT PRIMARY KEY,
     sku INT(40),
-    nombre VARCHAR(25),
+    nombre VARCHAR(50),
     descripcion VARCHAR(255),
     categoriaID INT,
     stock INT(255),

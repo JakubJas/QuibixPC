@@ -40,6 +40,7 @@ function getClientes() {
             $('#clienteEditar').hide();
             $('#clientes').empty();
 
+            $('#clientes').append('<br>');
             $('#clientes').append($('<h2>').text('Clientes'));
             $('#clientes').append($('<h5>').text('Nuestros clientes'));
             
@@ -123,6 +124,11 @@ function showDetallesCliente(cliente) {
     $('#carrito').hide();
     $('#clienteExtenso').show();
 
+    $('#clienteExtenso').empty();
+    $('#clienteExtenso').append('<br>');
+    $('#clienteExtenso').append($('<h2>').text('Cliente'));
+    $('#clienteExtenso').append($('<h5>').text('Nuestro cliente'));
+
     var formulario = $('<form>').addClass('form');
 
     formulario.append($('<div>').addClass('form-group').attr('disabled', true).append(
@@ -155,7 +161,6 @@ function showDetallesCliente(cliente) {
     });
     formulario.append($('<div>').addClass('form-group').append(botonEditar));
 
-    $('#clienteExtenso').empty();
     $('#clienteExtenso').append(formulario);
 
 }
@@ -168,6 +173,11 @@ function editarCliente(cliente) {
     $('#carrito').hide();
     $('#clienteExtenso').hide();
     $('#clienteEditar').show();
+
+    $('#clienteEditar').empty();
+    $('#clienteEditar').append('<br>');
+    $('#clienteEditar').append($('<h2>').text('Cliente'));
+    $('#clienteEditar').append($('<h5>').text('Editar a ' + cliente.nombre));
 
     var formulario = $('<form>').addClass('form');
 
@@ -204,25 +214,25 @@ function editarCliente(cliente) {
     });
     formulario.append($('<div>').addClass('form-group').append(botonGuardar));
 
-    $('#clienteEditar').empty().append(formulario);
+    $('#clienteEditar').append(formulario);
 }
 
 // Mandar datos nuevos del cliente
+// NO FUNCIONA EN LA PARTE DEL CLIENTE "ARREGLAR URGENTE"
 function putCliente(clienteId) {
-    
-    var nombre = $('#nombre').val();
+    var nombreCliente = $('#nombre').val();
     var apellidos = $('#apellidosCliente').val();
     var email = $('#emailCliente').val();
     var telefono = $('#telefonoCliente').val();
 
     console.log('Datos a enviar:', {
-        nombreCliente: nombre,
-        apellidos: apellidos,
-        email: email,
-        telefono: telefono
+        nombreCliente: nombreCliente,
+        apellidosCliente: apellidos,
+        emailCliente: email,
+        telefonoCliente: telefono
     });
 
-    if (nombre === '' || apellidos === '' || email === '' || telefono === '') {
+    if (nombreCliente === '' || apellidos === '' || email === '' || telefono === '') {
         alert('Por favor, completa todos los campos.');
         return;
     }
@@ -230,13 +240,13 @@ function putCliente(clienteId) {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + clienteId,
         type: 'PUT',
-        dataType: 'json',
-        data: {
-            nombreCliente: nombre,
-            apellidos: apellidos,
-            email: email,
-            telefono: telefono
-        },
+        contentType: 'application/json',
+        data: JSON.stringify({
+            nombreCliente: nombreCliente,
+            apellidosCliente: apellidos,
+            emailCliente: email,
+            telefonoCliente: telefono
+        }),
         success: function(response) {
             alert('Cliente editado con éxito');
             console.log('Datos enviados:', response);
@@ -248,8 +258,9 @@ function putCliente(clienteId) {
             alert('Error al editar cliente');
         }
     });
-    
 }
+
+
 
 // Crea un nuevo registro de cliente
 function postCliente() {
@@ -348,7 +359,7 @@ function getProductos() {
             $('#clienteExtenso').hide();
             $('#clienteEditar').hide();
             $('#carrito').hide();
-            $('#productos').empty();
+            $('#nuevoProducto').hide();
 
             // Select con los clientes
             var selectClientes = $('<select>').addClass('form-control').attr('id', 'clienteSelect');
@@ -356,12 +367,6 @@ function getProductos() {
                 var option = $('<option>').val(cliente.id).text(cliente.nombre + ' ' + cliente.apellidos);
                 selectClientes.append(option);
             });
-
-            $('#productos').append($('<h2>').text('Productos'));
-            $('#productos').append($('<h5>').text('Los mejores productos para tu amigo canino'));
-            $('#productos').append($('<label>').text('Cliente:'));
-            $('#productos').append(selectClientes);
-            $('#productos').append('<br>');
 
 
             // Obtener lista de productos
@@ -371,58 +376,114 @@ function getProductos() {
                 dataType: 'json',
                 success: function(response) {
                     console.log(response);
-                    
-                    var table = $('<table>').addClass('table'); 
-                    var headerRow = $('<tr>');
-                    headerRow.append($('<th>').text('Nombre'));
-                    headerRow.append($('<th>').text('Descripción'));
-                    headerRow.append($('<th>').text('Categoría'));
-                    headerRow.append($('<th>').text('Stock'));
-                    headerRow.append($('<th>').text('Precio'));
-                    headerRow.append($('<th>').text('Cantidad'));
-                    headerRow.append($('<th>').text('Acción'));
-                    table.append(headerRow);
 
-                    // Llenar la tabla con los productos
-                    $.each(response, function(index, producto) {
-                        var row = $('<tr>');
-                        row.append($('<td>').text(producto.nombre));
-                        row.append($('<td>').text(producto.descripcion));
-                        row.append($('<td>').text(producto.categoria));
-                        row.append($('<td>').text(producto.stock));
-                        row.append($('<td>').text(producto.precio));
+                    var productsPerPage = 10;
+                    var totalPages = Math.ceil(response.length / productsPerPage);
 
-                        // Input para la cantidad
-                        var cantidadInput = $('<input>').attr('type', 'number').attr('min', 1).attr('max', producto.stock).addClass('form-control');
-                        row.append($('<td>').append(cantidadInput));
+                    function mostrarProductosEnPagina(page) {
 
-                        // Botón para agregar al carrito
-                        var botonAgregar = $('<button>').addClass('btn btn-primary').text('Agregar al carrito').click(function() {
-                            var clienteID = $('#clienteSelect').val();
-                            var cantidad = cantidadInput.val();
-                            postAlCarrito(producto, clienteID, cantidad);
+                        $('#productos').empty();
+                        $('#productos').append('<br>');
+                        $('#productos').append($('<h2>').text('Productos'));
+                        $('#productos').append($('<h5>').text('Los mejores productos para tu amigo canino'));
+                        $('#productos').append($('<label>').text('Cliente:'));
+                        $('#productos').append(selectClientes);
+                        $('#productos').append('<br>');
+
+                        var startIndex = (page - 1) * productsPerPage;
+                        var endIndex = startIndex + productsPerPage;
+                        var productsToShow = response.slice(startIndex, endIndex);
+
+                        var table = $('<table>').addClass('table');
+                        var headerRow = $('<tr>');
+                        headerRow.append($('<th>').text('Nombre'));
+                        headerRow.append($('<th>').text('Descripción'));
+                        headerRow.append($('<th>').text('Categoría'));
+                        headerRow.append($('<th>').text('Stock'));
+                        headerRow.append($('<th>').text('Precio'));
+                        headerRow.append($('<th>').text('Cantidad'));
+                        headerRow.append($('<th>').text('Acción'));
+                        table.append(headerRow);
+
+                        $.each(productsToShow, function(index, producto) {
+                            var row = $('<tr>');
+                            row.append($('<td>').text(producto.nombre));
+                            row.append($('<td>').text(producto.descripcion));
+                            row.append($('<td>').text(producto.categoria));
+                            row.append($('<td>').text(producto.stock));
+                            row.append($('<td>').text(producto.precio));
+
+                            // Input para la cantidad
+                            var cantidadInput = $('<input>').attr('type', 'number').attr('min', 1).attr('max', producto.stock).addClass('form-control');
+                            row.append($('<td>').append(cantidadInput));
+
+                            // Botón para agregar al carrito
+                            var botonAgregar = $('<button>').addClass('btn btn-primary').text('Agregar al carrito').click(function() {
+                                var clienteID = $('#clienteSelect').val();
+                                var cantidad = cantidadInput.val();
+
+                                if (parseInt(cantidad) > producto.stock) {
+                                    alert('La cantidad seleccionada excede el stock disponible.');
+                                    return;
+                                }
+
+                                postAlCarrito(producto, clienteID, cantidad);
+                            });
+
+                            if (producto.stock <= 0) {
+                                botonAgregar.hide();
+                            }
+
+                            row.append($('<td>').append(botonAgregar));
+
+                            // Botón que elimina al producto
+                            var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
+                                deleteProducto(producto.id);
+                            });
+                            row.append($('<td>').append(botonEliminar));
+
+                            table.append(row);
                         });
-                        row.append($('<td>').append(botonAgregar));
 
-                        // Botón que elimina al producto
-                        var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
-                            deleteProducto(producto.id);
-                        });
-                        row.append($('<td>').append(botonEliminar));
+                        $('#productos').append(table);
+                        mostrarPaginacion(); 
+                    }
 
-                        table.append(row);
-                    });
+                    // Mostrar paginación
+                    function mostrarPaginacion() {
+                        var pagination = $('<div>').addClass('pagination');
+                        for (var i = 1; i <= totalPages; i++) {
+                            var button = $('<button>').addClass('pagination-button').text(i).click((function(page) {
+                                return function() {
+                                    mostrarProductosEnPagina(page);
 
-                    $('#productos').append(table);
+                                    var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nuevo Producto');
+                                    $('#productos').append(botonMostrarFormulario);
+                                    botonMostrarFormulario.click(function() {
+                                        $('#productos').hide();
+                                        $('#nuevoProducto').show();
+                                    });
+                                };
+                            })(i));
+                            pagination.append(button);
+                            
+                        }
+                        $('#productos').append(pagination);
 
-                    // Botón para mostrar el formulario de nuevo producto
+                        $('#productos').append('<br>');
+                    }
+
+                    // Mostrar la primera página
+                    mostrarProductosEnPagina(1);
+
                     var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nuevo Producto');
-                    $('#productos').append(botonMostrarFormulario);
-                    botonMostrarFormulario.click(function() {
-                        $('#productos').hide();
-                        $('#nuevoProducto').show();
-                    });
-                },
+                                    $('#productos').append(botonMostrarFormulario);
+                                    botonMostrarFormulario.click(function() {
+                                        $('#productos').hide();
+                                        $('#nuevoProducto').show();
+                                    });
+
+                    },
                 error: function(xhr, status, error) {
                     console.error('Error al obtener productos:', error);
                 }

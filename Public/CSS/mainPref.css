@@ -5,7 +5,7 @@
 }
 
 .bg_animate{
-  background: linear-gradient(to right, #66ff00, #03c222);
+  background: repeating-linear-gradient(rgb(87, 188, 234), rgb(48, 129, 250));
   overflow: auto;
 }
 
@@ -23,15 +23,15 @@
 .headMenu a{
   text-decoration: none;
   font-weight: bold;
-  color: rgb(0, 145, 255);
+  color: white;
 }
 
 .headMenu a:hover{
-  background-color: rgb(66, 222, 183);
+  background-color: white;
   padding: 2vh;
   border-radius: 5vh;
   text-decoration: none;
-  color: white;
+  color: rgb(87, 188, 234);
   font-weight: bold;
 }
 
@@ -54,6 +54,25 @@
 h2{
   margin-top: 5vh;
 }
+
+.bor-img{
+  border-radius: 15px;
+}
+
+.pagination-button {
+  background-color: white;
+  color: black;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.pagination-button:hover {
+  background-color: #f0f0f0;
+}
+
  
 /************************************************************************************/
 

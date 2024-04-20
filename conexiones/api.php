@@ -142,6 +142,13 @@ class Producto {
     }
 
     public function postProducto($sku, $nombreProducto, $descripcion, $categoriaID, $stock, $precio) {
+        $categoriaExistente = $this->verificarCategoriaExistente($categoriaID);
+        if (!$categoriaExistente) {
+            header('Content-Type: application/json', true, 400);
+            echo json_encode(array('mensaje' => 'La categoría especificada no existe'));
+            return;
+        }
+        
         $sql = "INSERT INTO producto (sku, nombre, descripcion, categoriaID, stock, precio) VALUES (?, ?, ?, ?, ?, ?)";
         
         $statement = $this->conn->prepare($sql);
@@ -432,13 +439,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 header('Content-Type: application/json', true, 400);
                 echo json_encode(array('mensaje' => 'Datos incompletos en la solicitud'));
             }
-        } elseif (strpos($_SERVER['REQUEST_URI'], '/QuibixPC/conexiones/api.php/Producto') !== false) {
-            // Procesar la actualización de stock del producto
-            parse_str(file_get_contents("php://input"), $putData);
-            $nuevoStock = $putData['nuevoStock'];
-
-            $producto = new Producto();
-            $producto->putStockProducto($lastSegment, $nuevoStock);
         } else {
             // Devolver un mensaje de error si la URI no es reconocida
             header('Content-Type: application/json', true, 400);
