@@ -189,22 +189,22 @@ function editarCliente(cliente) {
     console.log('Nombre del cliente:', cliente.nombre);
     formulario.append($('<div>').addClass('form-group').append(
         $('<label>').text('Nombre:'),
-        $('<input>').attr('type', 'text').attr('id', 'nombre').addClass('form-control').val(cliente.nombre)
+        $('<input>').attr('type', 'text').attr('id', 'nombreClientenuevo').addClass('form-control').val(cliente.nombre)
     ));
     
     formulario.append($('<div>').addClass('form-group').append(
         $('<label>').text('Apellidos:'),
-        $('<input>').attr('type', 'text').attr('id', 'apellidosCliente').addClass('form-control').val(cliente.apellidos)
+        $('<input>').attr('type', 'text').attr('id', 'apellidosClientenuevo').addClass('form-control').val(cliente.apellidos)
     ));
     
     formulario.append($('<div>').addClass('form-group').append(
         $('<label>').text('Correo Electrónico:'),
-        $('<input>').attr('type', 'email').attr('id', 'emailCliente').addClass('form-control').val(cliente.email)
+        $('<input>').attr('type', 'email').attr('id', 'emailClientenuevo').addClass('form-control').val(cliente.email)
     ));
     
     formulario.append($('<div>').addClass('form-group').append(
         $('<label>').text('Teléfono:'),
-        $('<input>').attr('type', 'tel').attr('id', 'telefonoCliente').addClass('form-control').val(cliente.telefono)
+        $('<input>').attr('type', 'tel').attr('id', 'telefonoClientenuevo').addClass('form-control').val(cliente.telefono)
     ));
     
 
@@ -220,45 +220,33 @@ function editarCliente(cliente) {
 // Mandar datos nuevos del cliente
 // NO FUNCIONA EN LA PARTE DEL CLIENTE "ARREGLAR URGENTE"
 function putCliente(clienteId) {
-    var nombreCliente = $('#nombre').val();
-    var apellidos = $('#apellidosCliente').val();
-    var email = $('#emailCliente').val();
-    var telefono = $('#telefonoCliente').val();
+    // Obtener los nuevos datos del cliente desde el formulario
+    var nombreClienteNuevo = $('#nombreClientenuevo').val();
+    var apellidosNuevo = $('#apellidosClientenuevo').val();
+    var emailNuevo = $('#emailClientenuevo').val();
+    var telefonoNuevo = $('#telefonoClientenuevo').val();
 
-    console.log('Datos a enviar:', {
-        nombreCliente: nombreCliente,
-        apellidosCliente: apellidos,
-        emailCliente: email,
-        telefonoCliente: telefono
-    });
-
-    if (nombreCliente === '' || apellidos === '' || email === '' || telefono === '') {
-        alert('Por favor, completa todos los campos.');
-        return;
-    }
-
+    // Hacer la solicitud PUT al servidor
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + clienteId,
         type: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify({
-            nombreCliente: nombreCliente,
-            apellidosCliente: apellidos,
-            emailCliente: email,
-            telefonoCliente: telefono
+            nombre: nombreClienteNuevo,
+            apellidos: apellidosNuevo,
+            email: emailNuevo,
+            telefono: telefonoNuevo
         }),
         success: function(response) {
-            alert('Cliente editado con éxito');
-            console.log('Datos enviados:', response);
-            location.reload();
+            console.log('Cliente actualizado correctamente:', response);
+            alert("Cliete actualizado ccorrectamente");
         },
         error: function(xhr, status, error) {
-            console.error('Error al editar cliente:', error);
-            console.log('Respuesta del servidor:', xhr.responseText);
-            alert('Error al editar cliente');
+            console.error('Error al actualizar cliente:', error);
         }
     });
 }
+
 
 
 

@@ -421,13 +421,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $lastSegment = end($uriSegments);
 
     if (is_numeric($lastSegment)) {
-        // Verificar si la URI es para la actualización de un cliente
         if (strpos($_SERVER['REQUEST_URI'], '/QuibixPC/conexiones/api.php/Cliente') !== false) {
             // Procesar la actualización del cliente
             $datosCliente = json_decode(file_get_contents("php://input"), true);
             
-            if (isset($datosCliente['nombreCliente'], $datosCliente['apellidos'], $datosCliente['email'], $datosCliente['telefono'])) {
-                $nombre = $datosCliente['nombreCliente'];
+            if (isset($datosCliente['nombre'], $datosCliente['apellidos'], $datosCliente['email'], $datosCliente['telefono'])) {
+                $nombre = $datosCliente['nombre'];
                 $apellidos = $datosCliente['apellidos'];
                 $email = $datosCliente['email'];
                 $telefono = $datosCliente['telefono'];
