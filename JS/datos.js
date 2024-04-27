@@ -13,6 +13,9 @@ function showContenido(seccion) {
         case 'carrito':
             getCarrito();
             break;
+        case 'compra':
+            getCompra();
+            break;
         case 'citas':
             getCitas();
             break;
@@ -38,12 +41,30 @@ function getClientes() {
             $('#nuevoCliente').hide();
             $('#clienteExtenso').hide();
             $('#clienteEditar').hide();
+            $('#compra').hide();
+            $('#citas').hide();
             $('#clientes').empty();
 
             $('#clientes').append('<br>');
             $('#clientes').append($('<h2>').text('Clientes'));
             $('#clientes').append($('<h5>').text('Nuestros clientes'));
             
+            // Campo de filtro por apellido
+            var filtroApellido = $('<input>').attr('type', 'text').attr('id', 'apellidoFiltro').addClass('form-control').attr('placeholder', 'Filtrar por Apellido');
+
+            $('#clientes').append($('<div>').addClass('form-group').append(filtroApellido));
+
+            // Botón para aplicar filtro
+            var botonFiltrar = $('<button>').addClass('btn btn-primary').text('Filtrar').click(function() {
+                var apellidoFiltro = $('#apellidoFiltro').val();
+                filtrarClientesPorApellido(apellidoFiltro);
+            });
+            $('#clientes').append(botonFiltrar);
+
+            $('#clientes').append('<br>');
+            $('#clientes').append('<br>');
+
+            // Crear tabla de clientes
             var tabla = $('<table>').addClass('table');
             var cabecera = $('<thead>').append(
                 $('<tr>').append(
@@ -51,7 +72,8 @@ function getClientes() {
                     $('<th>').text('Nombre'),
                     $('<th>').text('Apellidos'),
                     $('<th>').text('Correo electrónico'),
-                    $('<th>').text('Teléfono')
+                    $('<th>').text('Teléfono'),
+                    $('<th>').text('Acciones')
                 )
             );
             tabla.append(cabecera);
@@ -65,12 +87,23 @@ function getClientes() {
                     $('<td>').text(cliente.email),
                     $('<td>').text(cliente.telefono)
                 );
+
+                // Botón eliminar cliente
                 var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
-                    deleteCliente(cliente.id);
+                    if (confirm("¿Estás seguro de que deseas eliminar este Cliente?")) {
+                        if (clienteTieneProductosEnCarrito(cliente.id)) {
+                            alert("No se puede eliminar el cliente mientras tenga productos en el carrito.");
+                        } else {
+                            deleteCliente(cliente.id);
+                        }
+                    }
                 });
                 row.append($('<td>').append(botonEliminar));
 
-                var botonCliente = $('<button>').addClass('btn btn-primary btnCliente').text('Cliente').data('id', cliente.id);
+                // Botón ver cliente
+                var botonCliente = $('<button>').addClass('btn btn-primary btnCliente').text('Ver').data('id', cliente.id).click(function() {
+                    // Aquí podrías implementar una función para ver detalles del cliente
+                });
                 row.append($('<td>').append(botonCliente));
 
                 cuerpo.append(row);
@@ -79,6 +112,7 @@ function getClientes() {
             tabla.append(cuerpo);
             $('#clientes').append(tabla);
             
+            // Botón mostrar formulario para agregar nuevo cliente
             var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nuevo Cliente');
             $('#clientes').append(botonMostrarFormulario);
             botonMostrarFormulario.click(function() {
@@ -91,6 +125,40 @@ function getClientes() {
         }
     });
 }
+
+// Filtrar clientes por apellido
+function filtrarClientesPorApellido(apellido) {
+    var filas = $('#clientes tbody tr');
+    filas.hide();
+    filas.each(function() {
+        var apellidoCliente = $(this).find('td:nth-child(3)').text();
+        if (apellidoCliente.toLowerCase().includes(apellido.toLowerCase())) {
+            $(this).show();
+        }
+    });
+}
+
+// Verificar si el cliente tiene productos en el carrito
+function clienteTieneProductosEnCarrito(clienteId) {
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/CarritoCliente',
+        type: 'GET',
+        data: { clienteId: clienteId },
+        dataType: 'json',
+        success: function(carrito) {
+            if (carrito.length > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al obtener el carrito del cliente:', error);
+            return false; // En caso de error, asumimos que el cliente no tiene productos en el carrito
+        }
+    });
+}
+
 
 // Recopila los datos de un cliente
 function getCliente(clienteId) {
@@ -157,7 +225,7 @@ function showDetallesCliente(cliente) {
     ));
 
     var botonEditar = $('<button>').addClass('btn btn-primary').text('Editar').click(function() {
-        editarCliente(cliente);
+        updateCliente(cliente);
     });
     formulario.append($('<div>').addClass('form-group').append(botonEditar));
 
@@ -165,8 +233,8 @@ function showDetallesCliente(cliente) {
 
 }
 
-// Formulario editar cliente
-function editarCliente(cliente) {
+// Formulario actualizar cliente
+function updateCliente(cliente) {
     $('#clientes').hide();
     $('#productos').hide();
     $('#citas').hide();
@@ -218,15 +286,13 @@ function editarCliente(cliente) {
 }
 
 // Mandar datos nuevos del cliente
-// NO FUNCIONA EN LA PARTE DEL CLIENTE "ARREGLAR URGENTE"
 function putCliente(clienteId) {
-    // Obtener los nuevos datos del cliente desde el formulario
+
     var nombreClienteNuevo = $('#nombreClientenuevo').val();
     var apellidosNuevo = $('#apellidosClientenuevo').val();
     var emailNuevo = $('#emailClientenuevo').val();
     var telefonoNuevo = $('#telefonoClientenuevo').val();
 
-    // Hacer la solicitud PUT al servidor
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + clienteId,
         type: 'PUT',
@@ -246,9 +312,6 @@ function putCliente(clienteId) {
         }
     });
 }
-
-
-
 
 // Crea un nuevo registro de cliente
 function postCliente() {
@@ -295,18 +358,6 @@ function postCliente() {
     });
 }
 
-// Validación del Email
-function isValidEmail(email) {
-    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-// Validacion numero TLF
-function isValidPhoneNumber(telefono) {
-    var phoneRegex = /^\d{9}$/;
-    return phoneRegex.test(telefono);
-}
-
 $(document).ready(function() {
     $('#btnAgregarCliente').click(function() {
         postCliente();
@@ -332,153 +383,153 @@ function deleteCliente(id) {
 
 //PRODUCTOS································································································
 
-// Conseguir/Mostrar porductos e cliente que va a comprar el producto
+// Conseguir/Mostrar porductos
 function getProductos() {
-    // Obtener lista de clientes
+
+    $('#clientes').hide();
+    $('#nuevoCliente').hide();
+    $('#clienteExtenso').hide();
+    $('#clienteEditar').hide();
+    $('#carrito').hide();
+    $('#compra').hide();
+    $('#nuevoProducto').hide();
+    $('#citas').hide();
+
+    // Obtener lista de productos
     $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Producto',
         type: 'GET',
         dataType: 'json',
-        success: function(clientes) {
-            console.log('Clientes obtenidos:', clientes);
+        success: function(response) {
+            console.log(response);
 
-            $('#clientes').hide();
-            $('#nuevoCliente').hide();
-            $('#clienteExtenso').hide();
-            $('#clienteEditar').hide();
-            $('#carrito').hide();
-            $('#nuevoProducto').hide();
+            var productsPerPage = 10;
+            var totalPages = Math.ceil(response.length / productsPerPage);
 
-            // Select con los clientes
-            var selectClientes = $('<select>').addClass('form-control').attr('id', 'clienteSelect');
-            $.each(clientes, function(index, cliente) {
-                var option = $('<option>').val(cliente.id).text(cliente.nombre + ' ' + cliente.apellidos);
-                selectClientes.append(option);
-            });
+            function mostrarProductosEnPagina(page, categoriaFiltro, nombreFiltro) {
 
+                $('#productos').empty();
+                $('#productos').append('<br>');
+                $('#productos').append($('<h2>').text('Productos'));
+                $('#productos').append($('<h5>').text('Los mejores productos para tu amigo canino'));
+                $('#productos').append('<br>');
 
-            // Obtener lista de productos
-            $.ajax({
-                url: 'http://localhost/QuibixPC/conexiones/api.php/Producto',
-                type: 'GET',
-                dataType: 'json',
-                success: function(response) {
-                    console.log(response);
+                // Agregar campos de filtro por categoría y por nombre
+                var filtroCategoria = $('<input>').attr('type', 'text').attr('id', 'categoriaFiltro').addClass('form-control').attr('placeholder', 'Filtrar por categoría');
+                var filtroNombre = $('<input>').attr('type', 'text').attr('id', 'nombreFiltro').addClass('form-control').attr('placeholder', 'Filtrar por nombre');
 
-                    var productsPerPage = 10;
-                    var totalPages = Math.ceil(response.length / productsPerPage);
+                $('#productos').append($('<div>').addClass('form-group').append(filtroNombre));
+                $('#productos').append($('<div>').addClass('form-group').append(filtroCategoria));
 
-                    function mostrarProductosEnPagina(page) {
-
-                        $('#productos').empty();
-                        $('#productos').append('<br>');
-                        $('#productos').append($('<h2>').text('Productos'));
-                        $('#productos').append($('<h5>').text('Los mejores productos para tu amigo canino'));
-                        $('#productos').append($('<label>').text('Cliente:'));
-                        $('#productos').append(selectClientes);
-                        $('#productos').append('<br>');
-
-                        var startIndex = (page - 1) * productsPerPage;
-                        var endIndex = startIndex + productsPerPage;
-                        var productsToShow = response.slice(startIndex, endIndex);
-
-                        var table = $('<table>').addClass('table');
-                        var headerRow = $('<tr>');
-                        headerRow.append($('<th>').text('Nombre'));
-                        headerRow.append($('<th>').text('Descripción'));
-                        headerRow.append($('<th>').text('Categoría'));
-                        headerRow.append($('<th>').text('Stock'));
-                        headerRow.append($('<th>').text('Precio'));
-                        headerRow.append($('<th>').text('Cantidad'));
-                        headerRow.append($('<th>').text('Acción'));
-                        table.append(headerRow);
-
-                        $.each(productsToShow, function(index, producto) {
-                            var row = $('<tr>');
-                            row.append($('<td>').text(producto.nombre));
-                            row.append($('<td>').text(producto.descripcion));
-                            row.append($('<td>').text(producto.categoria));
-                            row.append($('<td>').text(producto.stock));
-                            row.append($('<td>').text(producto.precio));
-
-                            // Input para la cantidad
-                            var cantidadInput = $('<input>').attr('type', 'number').attr('min', 1).attr('max', producto.stock).addClass('form-control');
-                            row.append($('<td>').append(cantidadInput));
-
-                            // Botón para agregar al carrito
-                            var botonAgregar = $('<button>').addClass('btn btn-primary').text('Agregar al carrito').click(function() {
-                                var clienteID = $('#clienteSelect').val();
-                                var cantidad = cantidadInput.val();
-
-                                if (parseInt(cantidad) > producto.stock) {
-                                    alert('La cantidad seleccionada excede el stock disponible.');
-                                    return;
-                                }
-
-                                postAlCarrito(producto, clienteID, cantidad);
-                            });
-
-                            if (producto.stock <= 0) {
-                                botonAgregar.hide();
-                            }
-
-                            row.append($('<td>').append(botonAgregar));
-
-                            // Botón que elimina al producto
-                            var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
-                                deleteProducto(producto.id);
-                            });
-                            row.append($('<td>').append(botonEliminar));
-
-                            table.append(row);
-                        });
-
-                        $('#productos').append(table);
-                        mostrarPaginacion(); 
-                    }
-
-                    // Mostrar paginación
-                    function mostrarPaginacion() {
-                        var pagination = $('<div>').addClass('pagination');
-                        for (var i = 1; i <= totalPages; i++) {
-                            var button = $('<button>').addClass('pagination-button').text(i).click((function(page) {
-                                return function() {
-                                    mostrarProductosEnPagina(page);
-
-                                    var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nuevo Producto');
-                                    $('#productos').append(botonMostrarFormulario);
-                                    botonMostrarFormulario.click(function() {
-                                        $('#productos').hide();
-                                        $('#nuevoProducto').show();
-                                    });
-                                };
-                            })(i));
-                            pagination.append(button);
-                            
-                        }
-                        $('#productos').append(pagination);
-
-                        $('#productos').append('<br>');
-                    }
-
-                    // Mostrar la primera página
-                    mostrarProductosEnPagina(1);
+                // Botón para aplicar filtros
+                var botonFiltrar = $('<button>').addClass('btn btn-primary').text('Filtrar').click(function() {
+                    var categoriaFiltro = $('#categoriaFiltro').val();
+                    var nombreFiltro = $('#nombreFiltro').val();
+                    mostrarProductosEnPagina(1, categoriaFiltro, nombreFiltro);
 
                     var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nuevo Producto');
-                                    $('#productos').append(botonMostrarFormulario);
-                                    botonMostrarFormulario.click(function() {
-                                        $('#productos').hide();
-                                        $('#nuevoProducto').show();
-                                    });
+                            $('#productos').append(botonMostrarFormulario);
+                            botonMostrarFormulario.click(function() {
+                                $('#productos').hide();
+                                $('#nuevoProducto').show();
+                            });
+                });
+                $('#productos').append(botonFiltrar);
 
-                    },
-                error: function(xhr, status, error) {
-                    console.error('Error al obtener productos:', error);
+                $('#productos').append('<br>');
+                $('#productos').append('<br>');
+
+                var startIndex = (page - 1) * productsPerPage;
+                var endIndex = startIndex + productsPerPage;
+                var productosFiltrados = response;
+
+                // Aplicar filtro por categoría si se proporciona
+                if (categoriaFiltro) {
+                    productosFiltrados = productosFiltrados.filter(function(producto) {
+                        return producto.categoria.toLowerCase() === categoriaFiltro.toLowerCase();
+                    });
                 }
+
+                // Aplicar filtro por nombre si se proporciona
+                if (nombreFiltro) {
+                    productosFiltrados = productosFiltrados.filter(function(producto) {
+                        return producto.nombre.toLowerCase().includes(nombreFiltro.toLowerCase());
+                    });
+                }
+
+                var productsToShow = productosFiltrados.slice(startIndex, endIndex);
+
+                var table = $('<table>').addClass('table');
+                var headerRow = $('<tr>');
+                headerRow.append($('<th>').text('Nombre'));
+                headerRow.append($('<th>').text('Descripción'));
+                headerRow.append($('<th>').text('Categoría'));
+                headerRow.append($('<th>').text('Stock'));
+                headerRow.append($('<th>').text('Precio'));
+                headerRow.append($('<th>').text('Acción'));
+                table.append(headerRow);
+
+                $.each(productsToShow, function(index, producto) {
+                    var row = $('<tr>');
+                    row.append($('<td>').text(producto.nombre));
+                    row.append($('<td>').text(producto.descripcion));
+                    row.append($('<td>').text(producto.categoria));
+                    row.append($('<td>').text(producto.stock));
+                    row.append($('<td>').text(producto.precio));
+
+                    var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
+                        if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+                            deleteProducto(producto.id);
+                        } else {
+                            return false;
+                        }
+                    });
+                    row.append($('<td>').append(botonEliminar));
+
+                    table.append(row);
+                });
+
+                $('#productos').append(table);
+                mostrarPaginacion(); 
+            }
+
+            // Mostrar paginación
+            function mostrarPaginacion() {
+                var pagination = $('<div>').addClass('pagination');
+                for (var i = 1; i <= totalPages; i++) {
+                    var button = $('<button>').addClass('pagination-button').text(i).click((function(page) {
+                        return function() {
+                            mostrarProductosEnPagina(page, $('#categoriaFiltro').val(), $('#nombreFiltro').val());
+
+                            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nuevo Producto');
+                            $('#productos').append(botonMostrarFormulario);
+                            botonMostrarFormulario.click(function() {
+                                $('#productos').hide();
+                                $('#nuevoProducto').show();
+                            });
+                        };
+                    })(i));
+                    pagination.append(button);
+                    
+                }
+                $('#productos').append(pagination);
+
+                $('#productos').append('<br>');
+            }
+
+            // Mostrar la primera página con los filtros por defecto vacíos
+            mostrarProductosEnPagina(1, '', '');
+
+            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nuevo Producto');
+            $('#productos').append(botonMostrarFormulario);
+            botonMostrarFormulario.click(function() {
+                $('#productos').hide();
+                $('#nuevoProducto').show();
             });
+
         },
         error: function(xhr, status, error) {
-            console.error('Error al obtener clientes:', error);
+            console.error('Error al obtener productos:', error);
         }
     });
 }
@@ -507,9 +558,8 @@ function postProducto() {
         success: function(response) {
             alert('Producto nuevo creado con éxito');
             console.log('Datos enviados:', response);
-            location.reload();
         },
-        error: function(xhr, status, error, response) {
+        error: function(xhr, status, error) {
             console.error('Error al crear producto:', error);
             console.log('Respuesta del servidor:', xhr.responseText);
             alert('Error al registrar un producto');
@@ -540,31 +590,6 @@ function deleteProducto(id) {
     });
 }
 
-// Carga categorias para el select en porductos y para otras funciones que se utilice
-function cargarCategorias() {
-    $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Categoria',
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            $('#categoria').empty();
-            response.forEach(function(categoria) {
-                $('#categoria').append($('<option>', {
-                    value: categoria.id,
-                    text: categoria.nombre
-                }));
-            });
-        },
-        error: function(xhr, status, error) {
-            console.error('Error al cargar categorías:', error);
-        }
-    });
-}
-
-$(document).ready(function() {
-    cargarCategorias();
-});
-
 // CARRITO························································································
 
 // Mostrar/Conseguir carrito
@@ -581,6 +606,8 @@ function getCarrito() {
             $('#clienteExtenso').hide();
             $('#clienteEditar').hide();
             $('#productos').hide();
+            $('#compra').hide();
+            $('#citas').hide();
             $('#carrito').empty();
     
             if (response.length > 0) {
@@ -609,7 +636,11 @@ function getCarrito() {
                 row.append($('<td>').text(carrito.precio_total));
 
                 var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
-                    deleteCarrito(carrito.id);
+                    if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+                        deleteProducto(producto.id);
+                    } else {
+                        return false;
+                    }
                 });
                 row.append($('<td>').append(botonEliminar));
                 table.append(row);
@@ -656,28 +687,6 @@ function postAlCarrito(producto, clienteID, cantidad) {
     });
 }
 
-
-function putStockProducto(productoID, nuevoStock) {
-
-    var datosStock = {
-        productoID: productoID,
-        nuevoStock: nuevoStock
-    };
-
-    $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Producto/' + productoID,
-        type: 'PUT',
-        dataType: 'json',
-        data: datosStock,
-        success: function(response) {
-            console.log('Stock actualizado:', response.mensaje);
-        },
-        error: function(xhr, status, error) {
-            console.error('Error al actualizar stock del producto:', error);
-        }
-    });
-}
-
 function deleteCarrito(id) {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito/' + id,
@@ -693,5 +702,455 @@ function deleteCarrito(id) {
         }
     });
 }
+ 
+// COMPRA
+function getCompra() {
+    // Obtener lista de clientes
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
+        type: 'GET',
+        dataType: 'json',
+        success: function(clientes) {
+            console.log('Clientes obtenidos:', clientes);
+
+            $('#clientes').hide();
+            $('#nuevoCliente').hide();
+            $('#clienteExtenso').hide();
+            $('#clienteEditar').hide();
+            $('#carrito').hide();
+            $('#nuevoProducto').hide();
+            $('#citas').hide();
+            $('#productos').hide();
+
+            // Select con los clientes
+            var selectClientes = $('<select>').addClass('form-control').attr('id', 'clienteSelect');
+            $.each(clientes, function(index, cliente) {
+                var option = $('<option>').val(cliente.id).text(cliente.nombre + ' ' + cliente.apellidos);
+                selectClientes.append(option);
+            });
+
+            // Obtener lista de productos a comprar
+            $.ajax({
+                url: 'http://localhost/QuibixPC/conexiones/api.php/Producto',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    console.log(response);
+
+                    var productsPerPage = 10;
+                    var totalPages = Math.ceil(response.length / productsPerPage);
+
+                    function showProductosEnPagina(page) {
+
+                        $('#compra').empty();
+                        $('#compra').append('<br>');
+                        $('#compra').append($('<h2>').text('Compra'));
+                        $('#compra').append($('<h5>').text('Compra los productos para tu amigo canino'));
+                        $('#compra').append($('<label>').text('Cliente:'));
+                        $('#compra').append(selectClientes);
+                        $('#compra').append('<br>');
+
+                        var startIndex = (page - 1) * productsPerPage;
+                        var endIndex = startIndex + productsPerPage;
+                        var productsToShow = response.slice(startIndex, endIndex);
+
+                        var table = $('<table>').addClass('table');
+                        var headerRow = $('<tr>');
+                        headerRow.append($('<th>').text('Nombre'));
+                        headerRow.append($('<th>').text('Descripción'));
+                        headerRow.append($('<th>').text('Categoría'));
+                        headerRow.append($('<th>').text('Stock'));
+                        headerRow.append($('<th>').text('Precio'));
+                        headerRow.append($('<th>').text('Cantidad'));
+                        table.append(headerRow);
+
+                        $.each(productsToShow, function(index, producto) {
+                            var row = $('<tr>');
+                            row.append($('<td>').text(producto.nombre));
+                            row.append($('<td>').text(producto.descripcion));
+                            row.append($('<td>').text(producto.categoria));
+                            row.append($('<td>').text(producto.stock));
+                            row.append($('<td>').text(producto.precio));
+
+                            // Input para la cantidad
+                            var cantidadInput = $('<input>').attr('type', 'number').attr('min', 0).attr('max', producto.stock).addClass('form-control cantidad-input');
+                            row.append($('<td>').append(cantidadInput));
+
+                            table.append(row);
+                        });
+
+                        $('#compra').append(table);
+                        showPaginacion(); 
+                    }
+
+                    // Mostrar paginación
+                    function showPaginacion() {
+                        var pagination = $('<div>').addClass('pagination');
+                        for (var i = 1; i <= totalPages; i++) {
+                            var button = $('<button>').addClass('pagination-button').text(i).click((function(page) {
+                                return function() {
+                                    showProductosEnPagina(page);
+                                };
+                            })(i));
+                            pagination.append(button);
+                        }
+                        $('#compra').append(pagination);
+                        $('#compra').append('<br>');
+
+                        // Botón para agregar al carrito
+                        var botonAgregar = $('<button>').addClass('btn btn-primary agregar-carrito').text('Agregar al carrito').click(function() {
+                            var clienteID = $('#clienteSelect').val();
+                            var productos = [];
+
+                            // Recopilar información de productos seleccionados
+                            $('.cantidad-input').each(function() {
+                                var cantidad = parseInt($(this).val());
+                                if (cantidad > 0) {
+                                    var nombreProducto = $(this).closest('tr').find('td').eq(0).text();
+                                    productos.push({ nombre: nombreProducto, cantidad: cantidad });
+                                }
+                            });
+
+                            // Validar si se seleccionó al menos un producto
+                            if (productos.length === 0) {
+                                alert('Selecciona al menos un producto para agregar al carrito.');
+                                return;
+                            }
+
+                            postAlCarrito(productos, clienteID);
+                        });
+                        $('#compra').append(botonAgregar);
+
+                        // Verificar si hay al menos un producto seleccionado para habilitar el botón
+                        $('.cantidad').on('input', function() {
+                            var totalCantidad = 0;
+                            $('.cantidad-input').each(function() {
+                                totalCantidad += parseInt($(this).val());
+                            });
+                            if (totalCantidad > 0) {
+                                $('.agregar-carrito').prop('disabled', false);
+                            } else {
+                                $('.agregar-carrito').prop('disabled', true);
+                            }
+                        });
+                    }
+
+                    // Mostrar la primera página
+                    showProductosEnPagina(1);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error al obtener productos:', error);
+                }
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al obtener clientes:', error);
+        }
+    });
+}
+
+// CITAS
+
+function getCitas() {
+
+    $('#clientes').hide();
+    $('#nuevoCliente').hide();
+    $('#clienteExtenso').hide();
+    $('#clienteEditar').hide();
+    $('#productos').hide();
+    $('#carrito').hide();
+    $('#compra').hide();
+    $('#nuevaCita').hide();
+
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            console.log(response);
+
+            if(response.length > 0){
+
+            var citasPerPage = 10;
+            var totalPages = Math.ceil(response.length / citasPerPage);
+
+            function mostrarCitasEnPagina(page) {
+
+                $('#citas').empty();
+                $('#citas').append('<br>');
+                $('#citas').append($('<h2>').text('Citas'));
+                $('#citas').append($('<h5>').text('Todas nuestras citas'));
+                $('#citas').append('<br>');
+
+                var startIndex = (page - 1) * citasPerPage;
+                var endIndex = startIndex + citasPerPage;
+                var citasToShow = response.slice(startIndex, endIndex);
+
+                var table = $('<table>').addClass('table');
+                var headerRow = $('<tr>');
+                headerRow.append($('<th>').text('Cita'));
+                headerRow.append($('<th>').text('Cliente'));
+                headerRow.append($('<th>').text('Servicio'));
+                headerRow.append($('<th>').text('Trabajador'));
+                table.append(headerRow);
+
+                $.each(citasToShow, function(index, cita) {
+                    var row = $('<tr>');
+                    row.append($('<td>').text(cita.horario));
+                    row.append($('<td>').text(cita.nombre + ' ' + cita.apellido));
+                    row.append($('<td>').text(cita.servicio));
+                    row.append($('<td>').text(cita.peluquero));
+
+                    var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
+                        if (confirm("¿Estás seguro de que deseas eliminar esta cita?")) {
+                            deleteCita(cita.id);
+                        } else {
+                            return false;
+                        }
+                    });
+                    row.append($('<td>').append(botonEliminar));
+
+                    table.append(row);
+                });
+
+                $('#citas').append(table);
+                mostrarPaginacion(); 
+            }
+
+            // Mostrar paginación
+            function mostrarPaginacion() {
+                var pagination = $('<div>').addClass('pagination');
+                for (var i = 1; i <= totalPages; i++) {
+                    var button = $('<button>').addClass('pagination-button').text(i).click((function(page) {
+                        return function() {
+                            mostrarCitasEnPagina(page);
+
+                            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nueva Cita');
+                            $('#citas').append(botonMostrarFormulario);
+                            botonMostrarFormulario.click(function() {
+                                $('#citas').hide();
+                                $('#nuevaCita').show();
+                            });
+                        };
+                    })(i));
+                    pagination.append(button);
+                    
+                }
+                $('#citas').append(pagination);
+
+                $('#citas').append('<br>');
+            }
+            
+            mostrarCitasEnPagina(1);
+
+            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nueva Cita');
+            $('#citas').append(botonMostrarFormulario);
+            botonMostrarFormulario.click(function() {
+                $('#citas').hide();
+                $('#nuevaCita').show();
+            });
+            
+        } else {
+            $('#citas').append($('<h2>').text('Citas'));
+            $('#citas').text('No hay citas');
+            $('#citas').append('<br><br>');
+            
+            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nueva Cita');
+            $('#citas').append(botonMostrarFormulario);
+            botonMostrarFormulario.click(function() {
+                $('#citas').hide();
+                $('#nuevaCita').show();
+            });
+        }
+            
+
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al obtener citas:', error);
+        }
+    });
+}
 
 
+function postCita(){
+    var horario = $('#horario').val();
+    var clienteID = $('#clienteID').val();
+    var servicioID = $('#servicioID').val();
+    var peluqueroID = $('#peluqueroID').val();
+
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            horario: horario,
+            clienteID: clienteID,
+            servicioID: servicioID,
+            peluqueroID: peluqueroID,
+            },
+        success: function(response) {
+            alert('Cita nueva creada con éxito');
+            console.log('Datos enviados:', response);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al crear cita:', error);
+            console.log('Respuesta del servidor:', xhr.responseText);
+            if(xhr.responseText.includes('peluquero ya tiene una cita programada')) {
+                alert('El peluquero ya tiene una cita programada para esta hora');
+            } else {
+                alert('Error al registrar la cita');
+            }
+        }
+    });
+}
+
+$(document).ready(function() {
+    
+    $("#horario").flatpickr({
+        enableTime: true,
+        minTime: "9:00",
+        maxTime: "21:00",
+        dateFormat: "Y-m-d H:i", // Formato de fecha y hora
+        minDate: "today", // Fecha mínima (hoy)
+        maxDate: new Date().fp_incr(365), // Fecha máxima
+        time_24hr: true, // Formato
+        minuteIncrement: 30 // Incremento de minutos
+    });
+
+    $('#btnAgregarCita').click(function() {
+            postCita();
+    });
+});
+
+function putCita(){
+
+}
+
+function deleteCita(horario) {
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita/' + horario,
+        type: 'DELETE',
+        dataType: 'json',
+        success: function(response) {
+            alert('Cita eliminada correctamente');
+            location.reload(); 
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al eliminar la cita:', error);
+            alert('Error al eliminar la cita.');
+        }
+    });
+}
+
+
+//SELECT :
+
+function getServicios(){
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Servicio',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            $('#servicioID').empty();
+            response.forEach(function(servicio) {
+                $('#servicioID').append($('<option>', {
+                    value: servicio.id,
+                    text: servicio.nombre_servicio + " " + servicio.precio
+                }));
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al cargar servicio:', error);
+        }
+    });
+}
+
+$(document).ready(function() {
+    getServicios();
+});
+
+function getClienteCita(){
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            $('#clienteID').empty();
+            response.forEach(function(cliente) {
+                $('#clienteID').append($('<option>', {
+                    value: cliente.id,
+                    text: cliente.nombre + " " + cliente.apellidos
+                }));
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al cargar clientes:', error);
+        }
+    });
+}
+
+$(document).ready(function() {
+    getClienteCita();
+});
+
+function getPeluqueros(){
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Peluquero',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            $('#peluqueroID').empty();
+            response.forEach(function(peluquero) {
+                $('#peluqueroID').append($('<option>', {
+                    value: peluquero.id,
+                    text: peluquero.nombre + " " + peluquero.apellidos 
+                }));
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al cargar clientes:', error);
+        }
+    });
+}
+
+$(document).ready(function() {
+    getPeluqueros();
+});
+
+function getCategorias() {
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Categoria',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            $('#categoria').empty();
+            response.forEach(function(categoria) {
+                $('#categoria').append($('<option>', {
+                    value: categoria.id,
+                    text: categoria.nombre
+                }));
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al cargar categorías:', error);
+        }
+    });
+}
+
+$(document).ready(function() {
+    getCategorias();
+});
+
+// VALIDACIONES :
+
+// Validación del Email
+function isValidEmail(email) {
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+// Validacion numero TLF
+function isValidPhoneNumber(telefono) {
+    var phoneRegex = /^\d{9}$/;
+    return phoneRegex.test(telefono);
+}

@@ -24,7 +24,10 @@ require_once '../conexiones/tokenGenerate.php';
     <link rel="stylesheet" href="../Public/CSS/mainPref.css">
     <link rel="stylesheet" href="../Public/bootstrap/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="../JS/datos.js"></script>    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="../JS/datos.js"></script>
+ 
 
 </head>
 <body>
@@ -36,8 +39,9 @@ require_once '../conexiones/tokenGenerate.php';
             <div class="listCenter">
                 <ul class="headMenu">
                     <li><a href="#" onclick="showContenido('productos')">Productos</a></li>
-                    <li><a href="#" onclick="showContenido('')">Citas</a></li>
+                    <li><a href="#" onclick="showContenido('citas')">Citas</a></li>
                     <li><a href="#" onclick="showContenido('clientes')">Clientes</a></li>
+                    <li><a href="#" onclick="showContenido('compra')">Compra</a></li>
                     <li><a href="#" onclick="showContenido('carrito')">Carrito</a></li>
                     <li><a href="../controller/logout.php">Logout</a></li>
                 </ul>
@@ -142,7 +146,7 @@ require_once '../conexiones/tokenGenerate.php';
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="sku">SKU:</label>
-                            <input type="text" class="form-control" id="sku" required>
+                            <input type="number" class="form-control" id="sku" required>
                         </div>
                         <div class="form-group">
                             <label for="nombreProducto">Nombre:</label>
@@ -176,6 +180,43 @@ require_once '../conexiones/tokenGenerate.php';
         <div id="carrito" class="container" style="display: none;">
         </div><br>
 
+        <div id="compra" class="container" style="display: none;">
+        </div><br>
+
+        <div id="citas" class="container" style="display: none;">
+        </div><br>
+
+        <div id="nuevaCita" class="container" style="display: none;">
+            <h2>Agregar Nueva Cita</h2>
+            <form id="formularioCita">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="horario">Hora/Día:</label>
+                            <input type="text" class="form-control" id="horario" name="horario" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteID">Cliente:</label>
+                            <select class="form-control" id="clienteID" name="clienteID" required>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                    <div class="form-group">
+                            <label for="servicioID">Servicio:</label>
+                            <select class="form-control" id="servicioID" name="servicioID" required>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="peluqueroID">Peluquero:</label>
+                            <select class="form-control" id="peluqueroID" name="peluqueroID" required>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button id="btnAgregarCita" type="submit" class="btn btn-primary">Crear Cita</button>
+            </form>
+        </div>
 
     </div>
 

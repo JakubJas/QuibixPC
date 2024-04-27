@@ -13,7 +13,7 @@
         }
 
         public function insertarToken($usuarioID) {
-            $session_duration = 2*60*60*24;
+            $session_duration = 2*(60*60*24);
             $token = $this->generateToken();
             
             
