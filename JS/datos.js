@@ -320,6 +320,14 @@ function postCliente() {
     var email = $('#email').val();
     var telefono = $('#telefono').val();
 
+    detectSqlInjection(nombreCliente, apellidos, email, telefono);
+
+    if (detectSqlInjection(nombreCliente, apellidos, email, telefono)) {
+        console.log("Posible intento de inyección SQL");
+    } else {
+        console.log("La cadena es segura");
+    }
+
     if (nombreCliente === '' || apellidos === '' || email === '' || telefono === '') {
         alert('Por favor, completa todos los campos.');
         return;
@@ -376,7 +384,7 @@ function deleteCliente(id) {
         },
         error: function(xhr, status, error) {
             console.error('Error al eliminar cliente:', error);
-            alert('Error al eliminar cliente.');
+            alert('El cliente tiene citas o contiene artuculos en el carrito');
         }
     });
 }
@@ -543,6 +551,14 @@ function postProducto() {
     var precio = $('#precio').val();
     var categoriaID = $('#categoria').val();
 
+    detectSqlInjection(sku, nombreProducto, descripcion, stock, precio, categoriaID);
+
+    if (detectSqlInjection(sku, nombreProducto, descripcion, stock, precio, categoriaID)) {
+        console.log("Posible intento de inyección SQL");
+    } else {
+        console.log("La cadena es segura");
+    }
+
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Producto',
         type: 'POST',
@@ -594,6 +610,7 @@ function deleteProducto(id) {
 
 // Mostrar/Conseguir carrito
 function getCarrito() {
+    // Realizar la solicitud AJAX para obtener el carrito de compras
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito',
         type: 'GET',
@@ -609,44 +626,64 @@ function getCarrito() {
             $('#compra').hide();
             $('#citas').hide();
             $('#carrito').empty();
-    
+            
             if (response.length > 0) {
+                $('#carrito').append($('<h2>').text('Carrito de Compras'));
+                $('#carrito').append($('<h5>').text('Selecciona al cliente:'));
+                
+                var selectApellido = $('<select>').addClass('form-control').append($('<option>').attr('value', '').text('Seleccionar apellido'));
 
-            $('#carrito').append($('<h2>').text('Carrito de Compras'));
-            $('#carrito').append($('<h5>').text('Aquí están los productos en tu carrito'));
-    
-            var table = $('<table>').addClass('table'); 
-            var headerRow = $('<tr>');
-            headerRow.append($('<th>').text('ID'));
-            headerRow.append($('<th>').text('Cliente'));
-            headerRow.append($('<th>').text('Producto'));
-            headerRow.append($('<th>').text('Estado'));
-            headerRow.append($('<th>').text('Cantidad'));
-            headerRow.append($('<th>').text('Precio Total'));
-            headerRow.append($('<th>').text('Acciones'));
-            table.append(headerRow);
-    
-            $.each(response, function(index, carrito) {
-                var row = $('<tr>');
-                row.append($('<td>').text(carrito.id));
-                row.append($('<td>').text(carrito.cliente));
-                row.append($('<td>').text(carrito.producto));
-                row.append($('<td>').text(carrito.estado));
-                row.append($('<td>').text(carrito.cantidad));
-                row.append($('<td>').text(carrito.precio_total));
-
-                var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
-                    if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
-                        deleteProducto(producto.id);
-                    } else {
-                        return false;
-                    }
+                var apellidos = response.map(function(item) {
+                    return item.nombre + " " + item.apellido;
                 });
-                row.append($('<td>').append(botonEliminar));
-                table.append(row);
-            });
-    
-            $('#carrito').append(table);
+                apellidos = apellidos.filter(function(value, index, self) {
+                    return self.indexOf(value) === index;
+                });
+
+
+                apellidos.forEach(function(apellido) {
+                    selectApellido.append($('<option>').attr('value', apellido).text(apellido));
+                });
+
+                selectApellido.change(function() {
+                    var apellidoSeleccionado = $(this).val();
+                    filtrarCarritoPorApellido(apellidoSeleccionado);
+                });
+
+                $('#carrito').append(selectApellido);
+
+                var table = $('<table>').addClass('table'); 
+                var headerRow = $('<tr>');
+                headerRow.append($('<th>').text('ID'));
+                headerRow.append($('<th>').text('Cliente'));
+                headerRow.append($('<th>').text('Producto'));
+                headerRow.append($('<th>').text('Estado'));
+                headerRow.append($('<th>').text('Cantidad'));
+                headerRow.append($('<th>').text('Precio Total'));
+                headerRow.append($('<th>').text('Acciones'));
+                table.append(headerRow);
+                
+                response.forEach(function(carrito) {
+                    var row = $('<tr>');
+                    row.append($('<td>').text(carrito.id));
+                    row.append($('<td>').text(carrito.nombre + " " + carrito.apellido));
+                    row.append($('<td>').text(carrito.producto));
+                    row.append($('<td>').text(carrito.estado));
+                    row.append($('<td>').text(carrito.cantidad));
+                    row.append($('<td>').text(carrito.precio_total));
+
+                    var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
+                        if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+                            deleteCarrito(carrito.id);
+                        } else {
+                            return false;
+                        }
+                    });
+                    row.append($('<td>').append(botonEliminar));
+                    table.append(row);
+                });
+                
+                $('#carrito').append(table);
             } else {
                 $('#carrito').text('El carrito está vacío');
             }
@@ -654,8 +691,21 @@ function getCarrito() {
         error: function(xhr, status, error) {
             console.error('Error al obtener el carrito:', error);
         }
-    });    
+    });
 }
+
+// Función para filtrar los productos en el carrito por apellido del cliente
+function filtrarCarritoPorApellido(apellido) {
+    // Si no se selecciona ningún apellido, mostrar todos los productos
+    if (apellido === '') {
+        $('#carrito table tr').show();
+    } else {
+        // Ocultar todas las filas de la tabla y luego mostrar solo las que coinciden con el apellido seleccionado
+        $('#carrito table tr').hide();
+        $('#carrito table tr:has(td:nth-child(2):contains("' + apellido + '"))').show();
+    }
+}
+
 
 function postAlCarrito(producto, clienteID, cantidad) {
     var precioTotal = cantidad * producto.precio;
@@ -666,6 +716,14 @@ function postAlCarrito(producto, clienteID, cantidad) {
         cantidad: cantidad,
         precioTotal: precioTotal
     };
+
+    detectSqlInjection(datosProducto);
+
+    if (detectSqlInjection(datosProducto)) {
+        console.log("Posible intento de inyección SQL");
+    } else {
+        console.log("La cadena es segura");
+    }
 
     var _this = this;
 
@@ -686,6 +744,29 @@ function postAlCarrito(producto, clienteID, cantidad) {
         }
     });
 }
+
+function putStockProducto(productoID, nuevoStock) {
+
+    var datosStock = {
+        productoID: productoID,
+        nuevoStock: nuevoStock
+    };
+
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Producto/' + productoID,
+        type: 'PUT',
+        dataType: 'json',
+        data: datosStock,
+        success: function(response) {
+            console.log('Stock actualizado:', response.mensaje);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al actualizar stock del producto:', error);
+        }
+    });
+}
+
+
 
 function deleteCarrito(id) {
     $.ajax({
@@ -718,9 +799,8 @@ function getCompra() {
             $('#clienteExtenso').hide();
             $('#clienteEditar').hide();
             $('#carrito').hide();
-            $('#nuevoProducto').hide();
-            $('#citas').hide();
             $('#productos').hide();
+            $('#nuevoProducto').hide();
 
             // Select con los clientes
             var selectClientes = $('<select>').addClass('form-control').attr('id', 'clienteSelect');
@@ -729,7 +809,8 @@ function getCompra() {
                 selectClientes.append(option);
             });
 
-            // Obtener lista de productos a comprar
+
+            // Obtener lista de productos
             $.ajax({
                 url: 'http://localhost/QuibixPC/conexiones/api.php/Producto',
                 type: 'GET',
@@ -740,15 +821,17 @@ function getCompra() {
                     var productsPerPage = 10;
                     var totalPages = Math.ceil(response.length / productsPerPage);
 
-                    function showProductosEnPagina(page) {
+                    function mostrarProductosEnPagina(page) {
 
                         $('#compra').empty();
                         $('#compra').append('<br>');
                         $('#compra').append($('<h2>').text('Compra'));
-                        $('#compra').append($('<h5>').text('Compra los productos para tu amigo canino'));
+                        $('#compra').append($('<h5>').text('Compra lo mejor para tu amigo canino'));
                         $('#compra').append($('<label>').text('Cliente:'));
                         $('#compra').append(selectClientes);
                         $('#compra').append('<br>');
+                        $('#compra').append($('<label>').text('Productos:'));
+                        $('#compra').append($('<br><br>'));
 
                         var startIndex = (page - 1) * productsPerPage;
                         var endIndex = startIndex + productsPerPage;
@@ -762,6 +845,7 @@ function getCompra() {
                         headerRow.append($('<th>').text('Stock'));
                         headerRow.append($('<th>').text('Precio'));
                         headerRow.append($('<th>').text('Cantidad'));
+                        headerRow.append($('<th>').text('Acción'));
                         table.append(headerRow);
 
                         $.each(productsToShow, function(index, producto) {
@@ -773,71 +857,57 @@ function getCompra() {
                             row.append($('<td>').text(producto.precio));
 
                             // Input para la cantidad
-                            var cantidadInput = $('<input>').attr('type', 'number').attr('min', 0).attr('max', producto.stock).addClass('form-control cantidad-input');
+                            var cantidadInput = $('<input>').attr('type', 'number').attr('min', 1).attr('max', producto.stock).addClass('form-control');
                             row.append($('<td>').append(cantidadInput));
+
+                            // Botón para agregar al carrito
+                            var botonAgregar = $('<button>').addClass('btn btn-primary').text('Agregar al carrito').click(function() {
+                                var clienteID = $('#clienteSelect').val();
+                                var cantidad = cantidadInput.val();
+
+                                if (parseInt(cantidad) > producto.stock) {
+                                    alert('La cantidad seleccionada excede el stock disponible.');
+                                    return;
+                                }
+
+                                postAlCarrito(producto, clienteID, cantidad);
+                            });
+
+                            if (producto.stock <= 0) {
+                                botonAgregar.hide();
+                            }
+
+                            row.append($('<td>').append(botonAgregar));
 
                             table.append(row);
                         });
 
                         $('#compra').append(table);
-                        showPaginacion(); 
+                        mostrarPaginacion(); 
                     }
 
                     // Mostrar paginación
-                    function showPaginacion() {
+                    function mostrarPaginacion() {
                         var pagination = $('<div>').addClass('pagination');
                         for (var i = 1; i <= totalPages; i++) {
                             var button = $('<button>').addClass('pagination-button').text(i).click((function(page) {
                                 return function() {
-                                    showProductosEnPagina(page);
+                                    mostrarProductosEnPagina(page);
+
                                 };
                             })(i));
                             pagination.append(button);
+                            
                         }
                         $('#compra').append(pagination);
+
                         $('#compra').append('<br>');
-
-                        // Botón para agregar al carrito
-                        var botonAgregar = $('<button>').addClass('btn btn-primary agregar-carrito').text('Agregar al carrito').click(function() {
-                            var clienteID = $('#clienteSelect').val();
-                            var productos = [];
-
-                            // Recopilar información de productos seleccionados
-                            $('.cantidad-input').each(function() {
-                                var cantidad = parseInt($(this).val());
-                                if (cantidad > 0) {
-                                    var nombreProducto = $(this).closest('tr').find('td').eq(0).text();
-                                    productos.push({ nombre: nombreProducto, cantidad: cantidad });
-                                }
-                            });
-
-                            // Validar si se seleccionó al menos un producto
-                            if (productos.length === 0) {
-                                alert('Selecciona al menos un producto para agregar al carrito.');
-                                return;
-                            }
-
-                            postAlCarrito(productos, clienteID);
-                        });
-                        $('#compra').append(botonAgregar);
-
-                        // Verificar si hay al menos un producto seleccionado para habilitar el botón
-                        $('.cantidad').on('input', function() {
-                            var totalCantidad = 0;
-                            $('.cantidad-input').each(function() {
-                                totalCantidad += parseInt($(this).val());
-                            });
-                            if (totalCantidad > 0) {
-                                $('.agregar-carrito').prop('disabled', false);
-                            } else {
-                                $('.agregar-carrito').prop('disabled', true);
-                            }
-                        });
                     }
 
                     // Mostrar la primera página
-                    showProductosEnPagina(1);
-                },
+                    mostrarProductosEnPagina(1);
+
+                    },
                 error: function(xhr, status, error) {
                     console.error('Error al obtener productos:', error);
                 }
@@ -848,7 +918,6 @@ function getCompra() {
         }
     });
 }
-
 // CITAS
 
 function getCitas() {
@@ -903,7 +972,7 @@ function getCitas() {
 
                     var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
                         if (confirm("¿Estás seguro de que deseas eliminar esta cita?")) {
-                            deleteCita(cita.id);
+                            deleteCita(cita.horario);
                         } else {
                             return false;
                         }
@@ -971,12 +1040,19 @@ function getCitas() {
     });
 }
 
-
 function postCita(){
     var horario = $('#horario').val();
     var clienteID = $('#clienteID').val();
     var servicioID = $('#servicioID').val();
     var peluqueroID = $('#peluqueroID').val();
+
+    detectSqlInjection(horario, clienteID, servicioID, peluqueroID);
+
+    if (detectSqlInjection(horario, clienteID, servicioID, peluqueroID)) {
+        console.log("Posible intento de inyección SQL");
+    } else {
+        console.log("La cadena es segura");
+    }
 
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cita',
@@ -1010,11 +1086,11 @@ $(document).ready(function() {
         enableTime: true,
         minTime: "9:00",
         maxTime: "21:00",
-        dateFormat: "Y-m-d H:i", // Formato de fecha y hora
-        minDate: "today", // Fecha mínima (hoy)
-        maxDate: new Date().fp_incr(365), // Fecha máxima
-        time_24hr: true, // Formato
-        minuteIncrement: 30 // Incremento de minutos
+        dateFormat: "Y-m-d H:i",
+        minDate: "today", 
+        maxDate: new Date().fp_incr(365), 
+        time_24hr: true, 
+        minuteIncrement: 30 
     });
 
     $('#btnAgregarCita').click(function() {
@@ -1027,8 +1103,11 @@ function putCita(){
 }
 
 function deleteCita(horario) {
+    // Codificar el horario correctamente
+    var horarioCodificado = encodeURIComponent(horario);
+
     $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita/' + horario,
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita/' + horarioCodificado,
         type: 'DELETE',
         dataType: 'json',
         success: function(response) {
@@ -1041,7 +1120,6 @@ function deleteCita(horario) {
         }
     });
 }
-
 
 //SELECT :
 
@@ -1153,4 +1231,27 @@ function isValidEmail(email) {
 function isValidPhoneNumber(telefono) {
     var phoneRegex = /^\d{9}$/;
     return phoneRegex.test(telefono);
+}
+
+function detectSqlInjection(string) {
+    var sql_injection = false;
+    var forbidden = [
+        'select * ',
+        'select ',
+        'union all ',
+        'union ',
+        'insert',
+        'drop',
+        'where'
+    ];
+
+    string = decodeURIComponent(string.toLowerCase());
+
+    forbidden.forEach(function(operator) {
+        if (string.includes(operator) || new RegExp(operator, 'i').test(string)) {
+            sql_injection = true;
+        }
+    });
+
+    return sql_injection;
 }

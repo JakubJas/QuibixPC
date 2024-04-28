@@ -1,31 +1,5 @@
 <?php
 require 'basedatosconexion.php';
-
-class Usuario {
-    private $conn;
-    
-    public function __construct()
-    {
-       $this->conn = connection::dbConnection();    
-    }
-
-    public function getUsuarios() {
-        $sql = "SELECT * FROM usuario";
-        $resultado = $this->conn->query($sql);
-    
-        if ($resultado->num_rows > 0) {
-            $usuarios = array();
-    
-            while ($columna = $resultado->fetch_assoc()) {
-                $usuarios[] = $columna;
-            }
-            echo json_encode($usuarios);
-        } else {
-            echo json_encode(array('mensaje' => 'No se encontraron usuarios'));
-        }
-    }
-}
-
 class Cliente {
     private $conn;
 
@@ -66,19 +40,40 @@ class Cliente {
     }
 
     public function deleteCliente($id) {
-        $sql = "DELETE FROM cliente WHERE id = ?";
-        
-        $statement = $this->conn->prepare($sql);
-        $statement->bind_param("i", $id);
-        
-        if ($statement->execute()) {
-            header('Content-Type: application/json', true, 200);
-            echo json_encode(array('mensaje' => 'Cliente eliminado correctamente'));
+        $sqlCarrito = "SELECT COUNT(*) AS cantidad FROM Carrito WHERE clienteID = ?";
+        $statementCarrito = $this->conn->prepare($sqlCarrito);
+        $statementCarrito->bind_param("i", $id);
+        $statementCarrito->execute();
+        $resultadoCarrito = $statementCarrito->get_result();
+        $filaCarrito = $resultadoCarrito->fetch_assoc();
+        $cantidadCarrito = intval($filaCarrito['cantidad']);
+    
+        $sqlCitas = "SELECT COUNT(*) AS cantidad FROM Cita WHERE clienteID = ?";
+        $statementCitas = $this->conn->prepare($sqlCitas);
+        $statementCitas->bind_param("i", $id);
+        $statementCitas->execute();
+        $resultadoCitas = $statementCitas->get_result();
+        $filaCitas = $resultadoCitas->fetch_assoc();
+        $cantidadCitas = intval($filaCitas['cantidad']);
+    
+        if ($cantidadCarrito > 0 || $cantidadCitas > 0) {
+            header('Content-Type: application/json', true, 400);
+            echo json_encode(array('mensaje' => 'El cliente tiene elementos en el carrito o citas asociadas. No se puede eliminar.'));
         } else {
-            header('Content-Type: application/json', true, 500);
-            echo json_encode(array('mensaje' => 'Error al eliminar cliente: ' . $statement->error));
+            $sqlDelete = "DELETE FROM cliente WHERE id = ?";
+            $statementDelete = $this->conn->prepare($sqlDelete);
+            $statementDelete->bind_param("i", $id);
+    
+            if ($statementDelete->execute()) {
+                header('Content-Type: application/json', true, 200);
+                echo json_encode(array('mensaje' => 'Cliente eliminado correctamente'));
+            } else {
+                header('Content-Type: application/json', true, 500);
+                echo json_encode(array('mensaje' => 'Error al eliminar cliente: ' . $statementDelete->error));
+            }
         }
     }
+    
 
     public function getClientePorId($clienteId) {
         $sql = "SELECT id, nombre, apellidos, email, telefono FROM cliente WHERE id = ?";
@@ -259,6 +254,38 @@ class Producto {
             echo json_encode(array('mensaje' => 'Error al eliminar producto: ' . $statement->error));
         }
     }
+
+    public function putStockProducto($productoID, $nuevoStock) {
+        // Preparar la consulta SQL para actualizar el stock del producto
+        $sqlCarrito = "SELECT COUNT(*) AS cantidad FROM Carrito WHERE productoID = ?";
+        $statementCitas = $this->conn->prepare($sqlCarrito);
+        $statementCitas->bind_param("i", $id);
+        $statementCitas->execute();
+        $resultadoCitas = $statementCitas->get_result();
+        $filaCitas = $resultadoCitas->fetch_assoc();
+        $cantidadCarrito = intval($filaCitas['cantidad']);
+    
+        if ($cantidadCarrito > 0) {
+            header('Content-Type: application/json', true, 400);
+            echo json_encode(array('mensaje' => 'El producto tiene elementos en el carrito. No se puede eliminar.'));
+        }else{
+            $sql = "UPDATE producto SET stock = ? WHERE id = ?";
+            
+            // Preparar la declaración y enlazar los parámetros
+            $statement = $this->conn->prepare($sql);
+            $statement->bind_param("ii", $nuevoStock, $productoID);
+        }
+        // Ejecutar la consulta
+        if ($statement->execute()) {
+            // Devolver una respuesta JSON de éxito
+            header('Content-Type: application/json');
+            echo json_encode(array('mensaje' => 'Stock del producto actualizado correctamente'));
+        } else {
+            // Devolver una respuesta JSON de error
+            header('Content-Type: application/json', true, 500);
+            echo json_encode(array('error' => 'Error al actualizar el stock del producto: ' . $statement->error));
+        }
+    }
     
 }
 
@@ -345,7 +372,7 @@ class Carrito{
     }
 
     public function getCarrito() {
-        $sql = "SELECT c.id, cl.nombre AS cliente, p.nombre AS producto, e.estado AS estado, c.cantidad, c.precio_total
+        $sql = "SELECT c.id, cl.nombre AS nombre, cl.apellidos AS apellido, p.nombre AS producto, e.estado AS estado, c.cantidad, c.precio_total
                 FROM Carrito c
                 INNER JOIN Cliente cl ON c.clienteID = cl.id
                 INNER JOIN Producto p ON c.productoID = p.id
@@ -600,10 +627,7 @@ class Cita{
 } 
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    if ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Usuario') {
-        $usuario = new Usuario();
-        $usuario->getUsuarios();
-    } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Cliente') {
+    if ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Cliente') {
         $cliente = new Cliente();
         $cliente->getClientes();
     } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/CarritoCliente') {
@@ -630,9 +654,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     } else {
         $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
         $clienteId = end($uriSegments);
-        
-        $productoId = end($uriSegments);
-        
+                
         if (is_numeric($clienteId)) {
             $cliente = new Cliente();
             $cliente->getClientePorId($clienteId);
@@ -658,14 +680,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $producto = new Producto(); 
         $producto->postProducto($sku, $nombreProducto, $descripcion, $categoriaID, $stock, $precio);
     } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Carrito') {
-        // Obtener los datos del carrito de la solicitud POST
         $clienteID = $_POST['clienteID'];
         $productoID = $_POST['productoID'];
-        $estadoID = 1; // Estado inicial: Pendiente de pago
+        $estadoID = 1; 
         $cantidad = $_POST['cantidad'];
         $precioTotal = $_POST['precioTotal'];
     
-        // Instanciar un objeto Carrito y llamar al método correspondiente para agregar el producto al carrito
         $carrito = new Carrito();
         $carrito->postCarrito($clienteID, $productoID, $estadoID, $cantidad, $precioTotal);
     } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Cita') {
@@ -677,7 +697,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $cita = new Cita();
         $cita-> postCita($horario, $clienteID, $servicioID, $peluqueroID);
     }    
-} if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+} 
+
+if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
     $lastSegment = end($uriSegments);
 
@@ -699,6 +721,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 header('Content-Type: application/json', true, 400);
                 echo json_encode(array('mensaje' => 'Datos incompletos en la solicitud'));
             }
+        } elseif (strpos($_SERVER['REQUEST_URI'], '/QuibixPC/conexiones/api.php/Producto') !== false) {
+                parse_str(file_get_contents("php://input"), $putData);
+                $nuevoStock = $putData['nuevoStock'];
+    
+                $producto = new Producto();
+                $producto->putStockProducto($lastSegment, $nuevoStock);
+            
         } else {
             // Devolver un mensaje de error si la URI no es reconocida
             header('Content-Type: application/json', true, 400);
@@ -724,14 +753,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Carrito/' . $lastSegment) {
             $producto = new Carrito();
             $producto->deleteCarrito($lastSegment);
-        } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Cita/' . $horario) {
+        } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Cita/' . $lastSegment) {
+            $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
+            $lastSegment = end($uriSegments);
+        
             if (DateTime::createFromFormat('Y-m-d H:i:s', $lastSegment) !== false) {
 
                 $cita = new Cita();
                 $cita->deleteCita($lastSegment);
             } else {
                 header('Content-Type: application/json', true, 400);
-                echo json_encode(array('mensaje' => 'Horario de cita no válido'));
+                echo json_encode(array('mensaje' => 'ID no válido'));
             }
         } else {
             header('Content-Type: application/json', true, 400);
