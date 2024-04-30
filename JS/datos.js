@@ -24,9 +24,9 @@ function showContenido(seccion) {
     }
 }
 
-// CLIENTES·······················································································
+// CLIENTES············································································································································
 
-// Mostrar todos los clientes 
+// Función para mostrar a los clientes
 function getClientes() {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
@@ -35,6 +35,7 @@ function getClientes() {
         success: function(response) {
             console.log('Datos recibidos:', response);
             
+            // Ocultamos las secciones que no hagan falta
             $('#productos').hide();
             $('#nuevoProducto').hide();
             $('#carrito').hide();
@@ -61,8 +62,7 @@ function getClientes() {
             });
             $('#clientes').append(botonFiltrar);
 
-            $('#clientes').append('<br>');
-            $('#clientes').append('<br>');
+            $('#clientes').append('<br><br>');
 
             // Crear tabla de clientes
             var tabla = $('<table>').addClass('table');
@@ -102,7 +102,6 @@ function getClientes() {
 
                 // Botón ver cliente
                 var botonCliente = $('<button>').addClass('btn btn-primary btnCliente').text('Ver').data('id', cliente.id).click(function() {
-                    // Aquí podrías implementar una función para ver detalles del cliente
                 });
                 row.append($('<td>').append(botonCliente));
 
@@ -126,7 +125,7 @@ function getClientes() {
     });
 }
 
-// Filtrar clientes por apellido
+// Función para el fitro de getClientes()
 function filtrarClientesPorApellido(apellido) {
     var filas = $('#clientes tbody tr');
     filas.hide();
@@ -138,7 +137,7 @@ function filtrarClientesPorApellido(apellido) {
     });
 }
 
-// Verificar si el cliente tiene productos en el carrito
+// Comprueba si el cliente contiene algo en el carrito por si quieren eliminarlo de la base de datos
 function clienteTieneProductosEnCarrito(clienteId) {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/CarritoCliente',
@@ -154,13 +153,12 @@ function clienteTieneProductosEnCarrito(clienteId) {
         },
         error: function(xhr, status, error) {
             console.error('Error al obtener el carrito del cliente:', error);
-            return false; // En caso de error, asumimos que el cliente no tiene productos en el carrito
+            return false; 
         }
     });
 }
 
-
-// Recopila los datos de un cliente
+// Busca el ID del cliente que se quiere mostrar en detalle
 function getCliente(clienteId) {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + clienteId,
@@ -177,6 +175,7 @@ function getCliente(clienteId) {
     });
 }
 
+// Ejecuta la función
 $(document).ready(function() {
     $('#clientes').on('click', '.btnCliente', function() {
         var clienteId = $(this).data('id');
@@ -184,7 +183,7 @@ $(document).ready(function() {
     });
 });
 
-// Muestra un cliente
+// Aqui mostramos en detalle los datos del cliente
 function showDetallesCliente(cliente) {
     $('#clientes').hide();
     $('#productos').hide();
@@ -197,6 +196,7 @@ function showDetallesCliente(cliente) {
     $('#clienteExtenso').append($('<h2>').text('Cliente'));
     $('#clienteExtenso').append($('<h5>').text('Nuestro cliente'));
 
+    // Creamos un formulario para que los datos se muestren en los contenedores (bloqueados)
     var formulario = $('<form>').addClass('form');
 
     formulario.append($('<div>').addClass('form-group').attr('disabled', true).append(
@@ -224,6 +224,7 @@ function showDetallesCliente(cliente) {
         $('<input>').attr('type', 'tel').attr('readonly', true).attr('disabled', true).addClass('form-control').val(cliente.telefono)
     ));
 
+    // Creamos un boton que nos mande a la sección que nos permite cambiar los datos del usuario.
     var botonEditar = $('<button>').addClass('btn btn-primary').text('Editar').click(function() {
         updateCliente(cliente);
     });
@@ -233,7 +234,7 @@ function showDetallesCliente(cliente) {
 
 }
 
-// Formulario actualizar cliente
+// Función para poder editar los datos pero no se mandan
 function updateCliente(cliente) {
     $('#clientes').hide();
     $('#productos').hide();
@@ -285,13 +286,19 @@ function updateCliente(cliente) {
     $('#clienteEditar').append(formulario);
 }
 
-// Mandar datos nuevos del cliente
+// Función que recoge los datos del formulario de edición y los manda a la base de datos
 function putCliente(clienteId) {
 
     var nombreClienteNuevo = $('#nombreClientenuevo').val();
     var apellidosNuevo = $('#apellidosClientenuevo').val();
     var emailNuevo = $('#emailClientenuevo').val();
     var telefonoNuevo = $('#telefonoClientenuevo').val();
+
+    // Validaciones y comporbaciónes
+    if (nombreCliente === '' || apellidos === '' || email === '' || telefono === '') {
+        alert('Por favor, completa todos los campos.');
+        return;
+    }
 
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + clienteId,
@@ -313,13 +320,14 @@ function putCliente(clienteId) {
     });
 }
 
-// Crea un nuevo registro de cliente
+// Función para crear clientes nuevos
 function postCliente() {
     var nombreCliente = $('#nombreCliente').val();
     var apellidos = $('#apellidos').val();
     var email = $('#email').val();
     var telefono = $('#telefono').val();
 
+    // verificaciones y comprobaciones
     detectSqlInjection(nombreCliente, apellidos, email, telefono);
 
     if (detectSqlInjection(nombreCliente, apellidos, email, telefono)) {
@@ -366,13 +374,14 @@ function postCliente() {
     });
 }
 
+// Llamada a la función
 $(document).ready(function() {
     $('#btnAgregarCliente').click(function() {
         postCliente();
     });
 });
 
-// Borra al cliente del registro de BD
+// Función de borrar al cliente dependiendo de su id
 function deleteCliente(id) {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + id,
@@ -389,9 +398,9 @@ function deleteCliente(id) {
     });
 }
 
-//PRODUCTOS································································································
+//PRODUCTOS·············································································································································
 
-// Conseguir/Mostrar porductos
+// Función que consigue los productos de la bd
 function getProductos() {
 
     $('#clientes').hide();
@@ -542,7 +551,7 @@ function getProductos() {
     });
 }
 
-// Crea un nuevo producto
+// Función que crea porductos nuevos
 function postProducto() {
     var sku = $('#sku').val();
     var nombreProducto = $('#nombreProducto').val();
@@ -583,13 +592,14 @@ function postProducto() {
     });
 }
 
+// Llamada a la función
 $(document).ready(function() {
     $('#btnAgregarProducto').click(function() {
         postProducto();
     });
 });
 
-//Borrar producto
+// Función de borrar producto dependiendo de su id
 function deleteProducto(id) {
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Producto/' + id,
@@ -606,11 +616,10 @@ function deleteProducto(id) {
     });
 }
 
-// CARRITO························································································
+// CARRITO················································································································································
 
-// Mostrar/Conseguir carrito
+// Función que crea un tabla con los productos y clientes que se encuentren en el carrito
 function getCarrito() {
-    // Realizar la solicitud AJAX para obtener el carrito de compras
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito',
         type: 'GET',
@@ -631,6 +640,7 @@ function getCarrito() {
                 $('#carrito').append($('<h2>').text('Carrito de Compras'));
                 $('#carrito').append($('<h5>').text('Selecciona al cliente:'));
                 
+                // Un select con los nombre he apellidos de los clientes.
                 var selectApellido = $('<select>').addClass('form-control').append($('<option>').attr('value', '').text('Seleccionar apellido'));
 
                 var apellidos = response.map(function(item) {
@@ -666,12 +676,18 @@ function getCarrito() {
                 response.forEach(function(carrito) {
                     var row = $('<tr>');
                     row.append($('<td>').text(carrito.id));
-                    row.append($('<td>').text(carrito.nombre + " " + carrito.apellido));
+                    // Te manda a la seccion de mostrar cliente al detalle
+                    var botonCliente = $('<button>').addClass('btn btn-link cliente-btn').text(carrito.nombre + " " + carrito.apellido).data('id', carrito.clienteID).click(function() {
+                        var clienteId = $(this).data('id');
+                        getCliente(clienteId);
+                    });
+                    row.append($('<td>').append(botonCliente));                    
                     row.append($('<td>').text(carrito.producto));
                     row.append($('<td>').text(carrito.estado));
                     row.append($('<td>').text(carrito.cantidad));
                     row.append($('<td>').text(carrito.precio_total));
 
+                    // Boton eliminar del carrito
                     var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
                         if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
                             deleteCarrito(carrito.id);
@@ -685,6 +701,7 @@ function getCarrito() {
                 
                 $('#carrito').append(table);
             } else {
+                // Si el carrito esta vació se muestra el siguiente mensaje
                 $('#carrito').text('El carrito está vacío');
             }
         },
@@ -694,20 +711,19 @@ function getCarrito() {
     });
 }
 
-// Función para filtrar los productos en el carrito por apellido del cliente
+// Un filtro para filtrar los pedidos por apellidos y nombre
 function filtrarCarritoPorApellido(apellido) {
-    // Si no se selecciona ningún apellido, mostrar todos los productos
     if (apellido === '') {
         $('#carrito table tr').show();
     } else {
-        // Ocultar todas las filas de la tabla y luego mostrar solo las que coinciden con el apellido seleccionado
         $('#carrito table tr').hide();
         $('#carrito table tr:has(td:nth-child(2):contains("' + apellido + '"))').show();
     }
 }
 
-
+// Subida de productos y clientes al carrito 
 function postAlCarrito(producto, clienteID, cantidad) {
+    // Se calcula el precio total del producto
     var precioTotal = cantidad * producto.precio;
 
     var datosProducto = {
@@ -716,14 +732,6 @@ function postAlCarrito(producto, clienteID, cantidad) {
         cantidad: cantidad,
         precioTotal: precioTotal
     };
-
-    detectSqlInjection(datosProducto);
-
-    if (detectSqlInjection(datosProducto)) {
-        console.log("Posible intento de inyección SQL");
-    } else {
-        console.log("La cadena es segura");
-    }
 
     var _this = this;
 
@@ -745,6 +753,24 @@ function postAlCarrito(producto, clienteID, cantidad) {
     });
 }
 
+// Se borra del varrito el producto y al cliente
+function deleteCarrito(id) {
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito/' + id,
+        type: 'DELETE',
+        dataType: 'json',
+        success: function(response) {
+            alert('Producto eliminado del carrito correctamente');
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al eliminar del carrito:', error);
+            alert('Error al eliminar producto del carrito.');
+        }
+    });
+}
+
+// Hace un update en el stock del producto
 function putStockProducto(productoID, nuevoStock) {
 
     var datosStock = {
@@ -765,26 +791,219 @@ function putStockProducto(productoID, nuevoStock) {
         }
     });
 }
+ 
+// CITAS····················································································································································
 
+// Función de conseguir las citas de la BD
+function getCitas() {
 
+    $('#clientes').hide();
+    $('#nuevoCliente').hide();
+    $('#clienteExtenso').hide();
+    $('#clienteEditar').hide();
+    $('#productos').hide();
+    $('#carrito').hide();
+    $('#compra').hide();
+    $('#nuevaCita').hide();
 
-function deleteCarrito(id) {
     $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito/' + id,
-        type: 'DELETE',
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita',
+        type: 'GET',
         dataType: 'json',
         success: function(response) {
-            alert('Producto eliminado del carrito correctamente');
-            location.reload();
+            console.log(response);
+
+            if(response.length > 0){
+
+            var citasPerPage = 10;
+            var totalPages = Math.ceil(response.length / citasPerPage);
+
+            function mostrarCitasEnPagina(page) {
+
+                $('#citas').empty();
+                $('#citas').append('<br>');
+                $('#citas').append($('<h2>').text('Citas'));
+                $('#citas').append($('<h5>').text('Todas nuestras citas'));
+                $('#citas').append('<br>');
+
+                var startIndex = (page - 1) * citasPerPage;
+                var endIndex = startIndex + citasPerPage;
+                var citasToShow = response.slice(startIndex, endIndex);
+
+                var table = $('<table>').addClass('table');
+                var headerRow = $('<tr>');
+                headerRow.append($('<th>').text('Cita'));
+                headerRow.append($('<th>').text('Cliente'));
+                headerRow.append($('<th>').text('Servicio'));
+                headerRow.append($('<th>').text('Trabajador'));
+                table.append(headerRow);
+
+                $.each(citasToShow, function(index, cita) {
+                    var row = $('<tr>');
+                    row.append($('<td>').text(cita.horario));
+                    // Te lleva a la parte de cliente en detalle
+                    var botonCliente = $('<button>').addClass('btn btn-link cliente-btn').text(cita.nombre + " " + cita.apellido).data('id', cita.clienteID).click(function() {
+                        var clienteId = $(this).data('id');
+                        getCliente(clienteId);
+                    });
+                    row.append($('<td>').append(botonCliente));                    
+                    row.append($('<td>').text(cita.servicio));
+                    row.append($('<td>').text(cita.peluquero));
+
+                    // Boton de eliminar cita
+                    var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
+                        if (confirm("¿Estás seguro de que deseas eliminar esta cita?")) {
+                            deleteCita(cita.id);
+                        } else {
+                            return false;
+                        }
+                    });
+                    row.append($('<td>').append(botonEliminar));
+
+                    table.append(row);
+                });
+
+                $('#citas').append(table);
+                mostrarPaginacion(); 
+            }
+
+            // Mostrar paginación
+            function mostrarPaginacion() {
+                var pagination = $('<div>').addClass('pagination');
+                for (var i = 1; i <= totalPages; i++) {
+                    var button = $('<button>').addClass('pagination-button').text(i).click((function(page) {
+                        return function() {
+                            mostrarCitasEnPagina(page);
+
+                            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nueva Cita');
+                            $('#citas').append(botonMostrarFormulario);
+                            botonMostrarFormulario.click(function() {
+                                $('#citas').hide();
+                                $('#nuevaCita').show();
+                            });
+                        };
+                    })(i));
+                    pagination.append(button);
+                    
+                }
+                $('#citas').append(pagination);
+
+                $('#citas').append('<br>');
+            }
+            
+            mostrarCitasEnPagina(1);
+
+            // Boton para crear citas nuevas
+            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nueva Cita');
+            $('#citas').append(botonMostrarFormulario);
+            botonMostrarFormulario.click(function() {
+                $('#citas').hide();
+                $('#nuevaCita').show();
+            });
+            
+        } else {
+            // Se muestra cuando no hay citas
+            $('#citas').append($('<h2>').text('Citas'));
+            $('#citas').text('No hay citas');
+            $('#citas').append('<br><br>');
+            
+            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nueva Cita');
+            $('#citas').append(botonMostrarFormulario);
+            botonMostrarFormulario.click(function() {
+                $('#citas').hide();
+                $('#nuevaCita').show();
+            });
+        }
+            
+
         },
         error: function(xhr, status, error) {
-            console.error('Error al eliminar del carrito:', error);
-            alert('Error al eliminar producto del carrito.');
+            console.error('Error al obtener citas:', error);
         }
     });
 }
- 
-// COMPRA
+
+// Crear citas nuevas
+function postCita(){
+    var horario = $('#horario').val();
+    var clienteID = $('#clienteID').val();
+    var servicioID = $('#servicioID').val();
+    var peluqueroID = $('#peluqueroID').val();
+
+    detectSqlInjection(horario, clienteID, servicioID, peluqueroID);
+
+    if (detectSqlInjection(horario, clienteID, servicioID, peluqueroID)) {
+        console.log("Posible intento de inyección SQL");
+    } else {
+        console.log("La cadena es segura");
+    }
+
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            horario: horario,
+            clienteID: clienteID,
+            servicioID: servicioID,
+            peluqueroID: peluqueroID,
+            },
+        success: function(response) {
+            alert('Cita nueva creada con éxito');
+            console.log('Datos enviados:', response);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al crear cita:', error);
+            console.log('Respuesta del servidor:', xhr.responseText);
+            if(xhr.responseText.includes('peluquero ya tiene una cita programada')) {
+                alert('El peluquero ya tiene una cita programada para esta hora');
+            } else {
+                alert('Error al registrar la cita');
+            }
+        }
+    });
+}
+
+// Llamada a la función de crear citas
+$(document).ready(function() {
+    
+    $("#horario").flatpickr({
+        enableTime: true,
+        minTime: "9:00",
+        maxTime: "21:00",
+        dateFormat: "Y-m-d H:i",
+        minDate: "today", 
+        maxDate: new Date().fp_incr(365), 
+        time_24hr: true, 
+        minuteIncrement: 30 
+    });
+
+    $('#btnAgregarCita').click(function() {
+            postCita();
+    });
+});
+
+// Borrar cita 
+function deleteCita(id) {
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita/' + id,
+        type: 'DELETE',
+        dataType: 'json',
+        success: function(response) {
+            alert('Cita eliminada correctamente');
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al eliminar la cita:', error);
+            alert('Error al eliminar la cita.');
+        }
+    });
+}
+
+// COMPRA···················································································································································
+
+// Mostrar los productos pero con el boton de agregar al carrito, la función se encuntra en la
+// parte de carrito
 function getCompra() {
     // Obtener lista de clientes
     $.ajax({
@@ -918,211 +1137,13 @@ function getCompra() {
         }
     });
 }
-// CITAS
 
-function getCitas() {
-
-    $('#clientes').hide();
-    $('#nuevoCliente').hide();
-    $('#clienteExtenso').hide();
-    $('#clienteEditar').hide();
-    $('#productos').hide();
-    $('#carrito').hide();
-    $('#compra').hide();
-    $('#nuevaCita').hide();
-
-    $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita',
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            console.log(response);
-
-            if(response.length > 0){
-
-            var citasPerPage = 10;
-            var totalPages = Math.ceil(response.length / citasPerPage);
-
-            function mostrarCitasEnPagina(page) {
-
-                $('#citas').empty();
-                $('#citas').append('<br>');
-                $('#citas').append($('<h2>').text('Citas'));
-                $('#citas').append($('<h5>').text('Todas nuestras citas'));
-                $('#citas').append('<br>');
-
-                var startIndex = (page - 1) * citasPerPage;
-                var endIndex = startIndex + citasPerPage;
-                var citasToShow = response.slice(startIndex, endIndex);
-
-                var table = $('<table>').addClass('table');
-                var headerRow = $('<tr>');
-                headerRow.append($('<th>').text('Cita'));
-                headerRow.append($('<th>').text('Cliente'));
-                headerRow.append($('<th>').text('Servicio'));
-                headerRow.append($('<th>').text('Trabajador'));
-                table.append(headerRow);
-
-                $.each(citasToShow, function(index, cita) {
-                    var row = $('<tr>');
-                    row.append($('<td>').text(cita.horario));
-                    row.append($('<td>').text(cita.nombre + ' ' + cita.apellido));
-                    row.append($('<td>').text(cita.servicio));
-                    row.append($('<td>').text(cita.peluquero));
-
-                    var botonEliminar = $('<button>').addClass('btn btn-danger').text('Eliminar').click(function() {
-                        if (confirm("¿Estás seguro de que deseas eliminar esta cita?")) {
-                            deleteCita(cita.horario);
-                        } else {
-                            return false;
-                        }
-                    });
-                    row.append($('<td>').append(botonEliminar));
-
-                    table.append(row);
-                });
-
-                $('#citas').append(table);
-                mostrarPaginacion(); 
-            }
-
-            // Mostrar paginación
-            function mostrarPaginacion() {
-                var pagination = $('<div>').addClass('pagination');
-                for (var i = 1; i <= totalPages; i++) {
-                    var button = $('<button>').addClass('pagination-button').text(i).click((function(page) {
-                        return function() {
-                            mostrarCitasEnPagina(page);
-
-                            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nueva Cita');
-                            $('#citas').append(botonMostrarFormulario);
-                            botonMostrarFormulario.click(function() {
-                                $('#citas').hide();
-                                $('#nuevaCita').show();
-                            });
-                        };
-                    })(i));
-                    pagination.append(button);
-                    
-                }
-                $('#citas').append(pagination);
-
-                $('#citas').append('<br>');
-            }
-            
-            mostrarCitasEnPagina(1);
-
-            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nueva Cita');
-            $('#citas').append(botonMostrarFormulario);
-            botonMostrarFormulario.click(function() {
-                $('#citas').hide();
-                $('#nuevaCita').show();
-            });
-            
-        } else {
-            $('#citas').append($('<h2>').text('Citas'));
-            $('#citas').text('No hay citas');
-            $('#citas').append('<br><br>');
-            
-            var botonMostrarFormulario = $('<button>').attr('id', 'mostrarFormulario').addClass('btn btn-primary').text('Agregar Nueva Cita');
-            $('#citas').append(botonMostrarFormulario);
-            botonMostrarFormulario.click(function() {
-                $('#citas').hide();
-                $('#nuevaCita').show();
-            });
-        }
-            
-
-        },
-        error: function(xhr, status, error) {
-            console.error('Error al obtener citas:', error);
-        }
-    });
-}
-
-function postCita(){
-    var horario = $('#horario').val();
-    var clienteID = $('#clienteID').val();
-    var servicioID = $('#servicioID').val();
-    var peluqueroID = $('#peluqueroID').val();
-
-    detectSqlInjection(horario, clienteID, servicioID, peluqueroID);
-
-    if (detectSqlInjection(horario, clienteID, servicioID, peluqueroID)) {
-        console.log("Posible intento de inyección SQL");
-    } else {
-        console.log("La cadena es segura");
-    }
-
-    $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita',
-        type: 'POST',
-        dataType: 'json',
-        data: {
-            horario: horario,
-            clienteID: clienteID,
-            servicioID: servicioID,
-            peluqueroID: peluqueroID,
-            },
-        success: function(response) {
-            alert('Cita nueva creada con éxito');
-            console.log('Datos enviados:', response);
-        },
-        error: function(xhr, status, error) {
-            console.error('Error al crear cita:', error);
-            console.log('Respuesta del servidor:', xhr.responseText);
-            if(xhr.responseText.includes('peluquero ya tiene una cita programada')) {
-                alert('El peluquero ya tiene una cita programada para esta hora');
-            } else {
-                alert('Error al registrar la cita');
-            }
-        }
-    });
-}
-
-$(document).ready(function() {
-    
-    $("#horario").flatpickr({
-        enableTime: true,
-        minTime: "9:00",
-        maxTime: "21:00",
-        dateFormat: "Y-m-d H:i",
-        minDate: "today", 
-        maxDate: new Date().fp_incr(365), 
-        time_24hr: true, 
-        minuteIncrement: 30 
-    });
-
-    $('#btnAgregarCita').click(function() {
-            postCita();
-    });
-});
-
-function putCita(){
-
-}
-
-function deleteCita(horario) {
-    // Codificar el horario correctamente
-    var horarioCodificado = encodeURIComponent(horario);
-
-    $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Cita/' + horarioCodificado,
-        type: 'DELETE',
-        dataType: 'json',
-        success: function(response) {
-            alert('Cita eliminada correctamente');
-            location.reload(); 
-        },
-        error: function(xhr, status, error) {
-            console.error('Error al eliminar la cita:', error);
-            alert('Error al eliminar la cita.');
-        }
-    });
-}
+//··························································································································································
 
 //SELECT :
 
+// Estas funciónes han sido creadas para complementar otras para algunos selects de algunos filtros
+// o comporbación de la existencia de los datos al crear uno nuvo y validarlo (Productos)
 function getServicios(){
     $.ajax({
         url: 'http://localhost/QuibixPC/conexiones/api.php/Servicio',
@@ -1233,6 +1254,7 @@ function isValidPhoneNumber(telefono) {
     return phoneRegex.test(telefono);
 }
 
+//Detección de SQL Injection
 function detectSqlInjection(string) {
     var sql_injection = false;
     var forbidden = [

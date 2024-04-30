@@ -3,10 +3,12 @@ require 'basedatosconexion.php';
 class Cliente {
     private $conn;
 
+    // Establece la conexión con la base de datos al crear una instancia de Cliente
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
 
+    // Obtiene todos los clientes de la base de datos y los devuelve en formato JSON
     public function getClientes() {
         $sql = "SELECT c.id, c.nombre, c.apellidos, c.email, c.telefono FROM Cliente c";
     
@@ -23,7 +25,8 @@ class Cliente {
             echo json_encode(array('mensaje' => 'No se encontraron clientes'));
         }
     }
-    
+
+    // Registra un nuevo cliente en la base de datos
     public function postCliente($nombreCliente, $apellidos, $email, $telefono) {
         $sql = "INSERT INTO cliente (nombre, apellidos, email, telefono) VALUES (?, ?, ?, ?)";
         
@@ -39,6 +42,7 @@ class Cliente {
         }
     }
 
+    // Elimina un cliente de la base de datos, verifica si el cliente tiene elementos en el carrito o citas asociadas antes de eliminarlo
     public function deleteCliente($id) {
         $sqlCarrito = "SELECT COUNT(*) AS cantidad FROM Carrito WHERE clienteID = ?";
         $statementCarrito = $this->conn->prepare($sqlCarrito);
@@ -73,8 +77,8 @@ class Cliente {
             }
         }
     }
-    
 
+    // Obtiene un cliente específico por su ID y lo devuelve en formato JSON
     public function getClientePorId($clienteId) {
         $sql = "SELECT id, nombre, apellidos, email, telefono FROM cliente WHERE id = ?";
     
@@ -94,6 +98,7 @@ class Cliente {
         }
     }
 
+    // Actualiza la información de un cliente en la base de datos
     public function putCliente($id, $nombreCliente, $apellidos, $email, $telefono) {
         $sql = "UPDATE cliente SET nombre = ?, apellidos = ?, email = ?, telefono = ? WHERE id = ?";
         
@@ -109,6 +114,7 @@ class Cliente {
         }
     }
 
+    // Obtiene los productos en el carrito de un cliente específico y los devuelve en formato JSON
     public function getCarritoCliente($clienteId) {
         $sql = "SELECT p.id, p.nombre, p.descripcion, p.precio, c.cantidad 
                 FROM Carrito c 
@@ -138,6 +144,7 @@ class Producto {
         $this->conn = connection::dbConnection();
     }
 
+    // Obtiene todos los productos de la base de datos, incluyendo su categoría, y los devuelve en formato JSON
     public function getProductos() {
         $sql = "SELECT p.id, p.sku, p.nombre, p.descripcion, c.nombre AS categoria, p.stock, p.precio 
                 FROM Producto p
@@ -157,6 +164,7 @@ class Producto {
         }
     }
 
+    // Registra un nuevo producto en la base de datos, verificando si la categoría y el SKU ya existen, y validando los campos  
     public function postProducto($sku, $nombreProducto, $descripcion, $categoriaID, $stock, $precio) {
         
         $categoriaExistente = $this->verificarCategoriaExistente($categoriaID);
@@ -206,6 +214,7 @@ class Producto {
         }
     }
     
+    // Verifica si una categoría existe en la base de datos
     private function verificarCategoriaExistente($categoriaID) {
         $sql = "SELECT id FROM categoria WHERE id = ?";
         $statement = $this->conn->prepare($sql);
@@ -215,6 +224,7 @@ class Producto {
         return $statement->num_rows > 0;
     }
 
+    // Verifica si un SKU ya está en uso en la base de datos
     private function verificarSkuExistente($sku) {
         $sql = "SELECT id FROM producto WHERE sku = ?";
         $statement = $this->conn->prepare($sql);
@@ -224,6 +234,7 @@ class Producto {
         return $statement->num_rows > 0;
     }    
 
+    // Verifica si un número (SKU o stock) es válido y positivo
     private function verificarNumeroValido($sku, $stock) {
 
         if (!preg_match('/^\d+$/', $sku, $stock)) {
@@ -232,14 +243,17 @@ class Producto {
         return $sku > 0;
     }
 
+    // Verifica si un nombre de producto contiene solo letras y espacios
     private function verificarLetrasValido($nombreProducto) {
         return preg_match('/^[a-zA-Z\s]+$/', $nombreProducto);
     }
 
+    // Verifica si un precio es válido, siendo un número positivo con hasta dos decimales
     public function verificarPrecioValido($precio) {
         return preg_match('/^\d+(\.\d{1,2})?$/', $precio) && $precio > 0;
     }
 
+    // Elimina un producto de la base de datos por su ID
     public function deleteProducto($id) {
         $sql = "DELETE FROM producto WHERE id = ?";
         
@@ -255,6 +269,7 @@ class Producto {
         }
     }
 
+    // Actualiza el stock de un producto en la base de datos, verificando si tiene elementos en el carrito antes de actualizar
     public function putStockProducto($productoID, $nuevoStock) {
         // Preparar la consulta SQL para actualizar el stock del producto
         $sqlCarrito = "SELECT COUNT(*) AS cantidad FROM Carrito WHERE productoID = ?";
@@ -296,6 +311,7 @@ class Categoria{
         $this->conn = connection::dbConnection();
     }
 
+    // Obtiene todos las categorías de la base de datos, incluyendo su categoría, y los devuelve en formato JSON
     public function getCategorias() {
         $sql = "SELECT c.id, c.nombre FROM Categoria c";
     
@@ -321,6 +337,7 @@ class Peluquero{
         $this->conn = connection::dbConnection();
     }
 
+    // Obtiene todos los peluqueros de la base de datos, incluyendo su categoría, y los devuelve en formato JSON
     public function getPeluquero() {
         $sql = "SELECT p.id, p.nombre, p.apellidos, p.telefono FROM Peluquero p";
     
@@ -346,6 +363,7 @@ class Servicio{
         $this->conn = connection::dbConnection();
     }
 
+    // Obtiene todos los servicios de la base de datos, incluyendo su categoría, y los devuelve en formato JSON
     public function getServicio() {
         $sql = "SELECT s.id, s.nombre_servicio, s.precio FROM Servicio s";
     
@@ -371,8 +389,9 @@ class Carrito{
         $this->conn = connection::dbConnection();
     }
 
+    // Obtiene los elementos del carrito de la base de datos y los devuelve en formato JSON
     public function getCarrito() {
-        $sql = "SELECT c.id, cl.nombre AS nombre, cl.apellidos AS apellido, p.nombre AS producto, e.estado AS estado, c.cantidad, c.precio_total
+        $sql = "SELECT c.id, cl.id AS clienteID, cl.nombre AS nombre, cl.apellidos AS apellido, p.nombre AS producto, e.estado AS estado, c.cantidad, c.precio_total
                 FROM Carrito c
                 INNER JOIN Cliente cl ON c.clienteID = cl.id
                 INNER JOIN Producto p ON c.productoID = p.id
@@ -392,6 +411,7 @@ class Carrito{
         }
     }
 
+    // Registra un nuevo elemento en el carrito, verificando si los clientes, productos y estados existen
     public function postCarrito($clienteID, $productoID, $estadoID, $cantidad, $precioTotal) {
         // Preparar la consulta SQL para insertar el producto en el carrito
         $clienteExistente = $this->verificarClienteExistente($clienteID);
@@ -458,6 +478,7 @@ class Carrito{
         return $statement->num_rows > 0;
     }
 
+    // Elimina un elemento del carrito por su ID, y revierte la cantidad eliminada al stock del producto asociado
     public function deleteCarrito($id) {
         // Obtener la cantidad eliminada del carrito y el ID del producto asociado
         $sql = "SELECT productoID, cantidad FROM carrito WHERE id = ?";
@@ -497,8 +518,9 @@ class Cita{
         $this->conn = connection::dbConnection();
     }
 
+    // Obtiene las citas de la base de datos y las devuelve en formato JSON
     public function getCitas() {
-        $sql = "SELECT c.horario, cl.nombre AS nombre, cl.apellidos AS apellido, s.nombre_servicio AS servicio, p.nombre AS peluquero
+        $sql = "SELECT c.id, c.horario, cl.id AS clienteID, cl.nombre AS nombre, cl.apellidos AS apellido, s.nombre_servicio AS servicio, p.nombre AS peluquero
                 FROM Cita c
                 INNER JOIN Cliente cl ON c.clienteID = cl.id
                 INNER JOIN Servicio s ON c.servicioID = s.id
@@ -518,6 +540,7 @@ class Cita{
         }
     }
 
+    // Registra una nueva cita, verificando la existencia del cliente, servicio y peluquero, así como la disponibilidad del peluquero en el horario especificado
     public function postCita($horario, $clienteID, $servicioID, $peluqueroID) {
 
         $clienteExistente = $this->verificarClienteExistente($clienteID);
@@ -602,17 +625,14 @@ class Cita{
         $row = $result->fetch_assoc();
         return $row['total'] == 0;
     }
-    
-    public function putCita(){
 
-    }
+    // Elimina una cita por su horario
+    public function deleteCita($id) {
 
-    public function deleteCita($horario) {
-
-        $sql = "DELETE FROM cita WHERE horario = ?";
+        $sql = "DELETE FROM cita WHERE id = ?";
         
         $statement = $this->conn->prepare($sql);
-        $statement->bind_param("s", $horario);
+        $statement->bind_param("i", $id);
         
         if ($statement->execute()) {
             header('Content-Type: application/json');
@@ -623,9 +643,9 @@ class Cita{
         }
     }
     
-
 } 
 
+// GET
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Cliente') {
         $cliente = new Cliente();
@@ -660,7 +680,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $cliente->getClientePorId($clienteId);
         }
     }
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+} 
+
+// POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Cliente') {
         $nombreCliente = $_POST['nombreCliente'];
         $apellidos = $_POST['apellidos'];
@@ -699,6 +722,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }    
 } 
 
+// PUT
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
     $lastSegment = end($uriSegments);
@@ -738,7 +762,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         header('Content-Type: application/json', true, 400);
         echo json_encode(array('mensaje' => 'ID no válido en la URI'));
     }
-} elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+} 
+
+// DELETE
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
 
     $lastSegment = end($uriSegments);
@@ -751,20 +778,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
             $producto = new Producto();
             $producto->deleteProducto($lastSegment);
         } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Carrito/' . $lastSegment) {
-            $producto = new Carrito();
-            $producto->deleteCarrito($lastSegment);
+            $productoCarrito = new Carrito();
+            $productoCarrito->deleteCarrito($lastSegment);
         } elseif ($_SERVER['REQUEST_URI'] === '/QuibixPC/conexiones/api.php/Cita/' . $lastSegment) {
-            $uriSegments = explode('/', $_SERVER['REQUEST_URI']);
-            $lastSegment = end($uriSegments);
-        
-            if (DateTime::createFromFormat('Y-m-d H:i:s', $lastSegment) !== false) {
-
-                $cita = new Cita();
-                $cita->deleteCita($lastSegment);
-            } else {
-                header('Content-Type: application/json', true, 400);
-                echo json_encode(array('mensaje' => 'ID no válido'));
-            }
+            $cita = new Cita();
+            $cita->deleteCita($lastSegment);
         } else {
             header('Content-Type: application/json', true, 400);
             echo json_encode(array('mensaje' => 'ID no valido'));

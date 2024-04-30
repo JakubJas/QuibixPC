@@ -25,7 +25,7 @@ class login{
                 // Comparar la contraseña ingresada con la contraseña almacenada
                 if ($clave === $stored_password) {
                     $token = new Token();
-                    $token->insertarToken($user_id);
+                    $token->postToken($user_id);
 
                     session_start();
                     $_SESSION['usuario_id'] = $user_id;

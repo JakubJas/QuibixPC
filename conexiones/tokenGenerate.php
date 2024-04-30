@@ -12,7 +12,7 @@
             return bin2hex(random_bytes(32)); 
         }
 
-        public function insertarToken($usuarioID) {
+        public function postToken($usuarioID) {
             $session_duration = 2*(60*60*24);
             $token = $this->generateToken();
             
