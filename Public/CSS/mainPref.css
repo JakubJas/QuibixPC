@@ -4,11 +4,13 @@
   box-sizing: border-box;
 }
 
+/* Fondo del header */
 .bg_animate{
   background: repeating-linear-gradient(rgb(87, 188, 234), rgb(48, 129, 250));
   overflow: auto;
 }
 
+/* Ajuste de la imagen del header "Logo" */
 .logo{   
   float: left;
   margin-left: 10vh;
@@ -17,15 +19,18 @@
   width: 10vh;
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 100%;
+  background-size: 50%;
+
 }
 
+/* Ajuste del texto y su estilo en los links de las secciones */
 .headMenu a{
   text-decoration: none;
   font-weight: bold;
   color: white;
 }
 
+/* Al pasar el ratón por encima cambia de estilo los links del header */
 .headMenu a:hover{
   background-color: white;
   padding: 2vh;
@@ -35,11 +40,13 @@
   font-weight: bold;
 }
 
+/* Ajustar que la lista sea horizontal no vertical */
 .listCenter{
   display: flex;
   justify-content: center;
 }
   
+/* Ajustes del menu */
 .headMenu{
   text-align: center;
   list-style: none;
@@ -47,18 +54,22 @@
   display: flex;
 }
 
+/* Distancia entre cada li */
 .headMenu li{
   margin: 3vh 10vh 0 0vh;
 }
 
+/* Distancia de todos los h2 de la parte superior */
 h2{
   margin-top: 5vh;
 }
 
+/* Aqui solo se ajusta el radio de las imagenes del main */
 .bor-img{
   border-radius: 15px;
 }
 
+/* Aqui es el estilo de los botones de las paginas que sean en las tablas */
 .pagination-button {
   background-color: white;
   color: black;
@@ -69,6 +80,7 @@ h2{
   cursor: pointer;
 }
 
+/* Al pasar el raton cambia el color de fondo */
 .pagination-button:hover {
   background-color: #f0f0f0;
 }
@@ -76,6 +88,7 @@ h2{
  
 /************************************************************************************/
 
+/* Deieño del footer */
 footer{
   background-color: black;
   color: white;
@@ -84,14 +97,17 @@ footer{
   margin-top: 12vh;
 }
 
+/* Cambio de color de la lines separadora */
 hr{
   border-color: white;
 }
 
+/* Alineaciones de txt h4 */
 h4{
   text-align: center;
 }
 
+/* El logo2 es el blanco y negro que va en el footer */
 .logo2{   
   float: left;
   background-image: url(../IMG_Web/Quibix_LogoBN.png);
@@ -105,10 +121,12 @@ h4{
   background-size: 100%;
 }
 
+/* El menu del footer que las letras sean blancas */
 .footerMenu a{
   color: white;
 }
 
+/* Al pasar el raton que cambie de apareincia */
 .footerMenu a:hover{
   background-color: white;
   padding: 1vh;

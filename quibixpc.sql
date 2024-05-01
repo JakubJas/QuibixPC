@@ -35,11 +35,11 @@ CREATE TABLE IF NOT EXISTS peluquero(
     telefono INT(10) NOT NULL
 );
 CREATE TABLE IF NOT EXISTS cita(
+    id INT AUTO_INCREMENT PRIMARY KEY,
     horario DATETIME NOT NULL,
     clienteID INT,
     servicioID INT,
-    peluqueroID INT,
-    primary key(horario, clienteID, servicioID, peluqueroID)
+    peluqueroID INT
 );
 CREATE TABLE IF NOT EXISTS categoria(
 	id INT AUTO_INCREMENT PRIMARY KEY,

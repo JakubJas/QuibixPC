@@ -31,12 +31,16 @@ require_once '../conexiones/tokenGenerate.php';
 
 </head>
 <body>
+    <noscript>
+        <h2 style="color:red; font-weight:bold;">Active el JavaScript de su navegador</h2>
+        <label style="color:red; font-weight:bold;">Si ve este mensaje, debe activar el JavaScript para poder visualizar la página y su correcto funcionamiento</label>
+    </noscript>
     <header class="bg_animate">
         <nav>
             <a href="main.php">
-                <div class="logo"></div>
+                <div class="logo col-md-1"></div>
             </a>
-            <div class="listCenter">
+            <div class="listCenter col-md-9">
                 <ul class="headMenu">
                     <li><a href="#" onclick="showContenido('productos')">Productos</a></li>
                     <li><a href="#" onclick="showContenido('citas')">Citas</a></li>

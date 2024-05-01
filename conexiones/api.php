@@ -1,14 +1,24 @@
 <?php
 require 'basedatosconexion.php';
+/** 
+* Clase Cliente, aqui se tratan todas las gestíones/operaciones que 
+* tienen que ver con el cliente/s en la base de datos.
+*/
 class Cliente {
     private $conn;
 
-    // Establece la conexión con la base de datos al crear una instancia de Cliente
+    /**
+    *  Constructor de la clase Cliente.
+    *  Inicializa la conexión a la base de datos.
+    */
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
 
-    // Obtiene todos los clientes de la base de datos y los devuelve en formato JSON
+    /**
+    * Método para obtener todos los clientes.
+    * Devuelve un JSON con la información de todos los clientes.
+    */
     public function getClientes() {
         $sql = "SELECT c.id, c.nombre, c.apellidos, c.email, c.telefono FROM Cliente c";
     
@@ -26,8 +36,37 @@ class Cliente {
         }
     }
 
-    // Registra un nuevo cliente en la base de datos
+     /**
+     * Método para registrar un nuevo cliente.
+     * 
+     * @param string $nombreCliente Nombre del cliente.
+     * @param string $apellidos Apellidos del cliente.
+     * @param string $email Email del cliente.
+     * @param string $telefono Teléfono del cliente.
+    */
     public function postCliente($nombreCliente, $apellidos, $email, $telefono) {
+        
+        //Otra manera de si el nombre y apellido no cintienen caracteres especiales ni numero
+        if (!preg_match("/^[a-zA-Z]+$/", $nombreCliente) || !preg_match("/^[a-zA-Z]+$/", $apellidos)) {
+            header('Content-Type: application/json');
+            echo json_encode(array('mensaje' => 'El nombre y apellidos deben contener solo letras.'));
+            return;
+        }
+        
+        // Otra manera si el email es válido
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            header('Content-Type: application/json');
+            echo json_encode(array('mensaje' => 'El email no es válido.'));
+            return;
+        }
+    
+        // Otra manera de verificar del teléfono
+        if (!preg_match("/^\d{9}$/", $telefono)) {
+            header('Content-Type: application/json');
+            echo json_encode(array('mensaje' => 'El teléfono debe contener exactamente 9 cifras.'));
+            return;
+        }
+
         $sql = "INSERT INTO cliente (nombre, apellidos, email, telefono) VALUES (?, ?, ?, ?)";
         
         $statement = $this->conn->prepare($sql);
@@ -42,7 +81,11 @@ class Cliente {
         }
     }
 
-    // Elimina un cliente de la base de datos, verifica si el cliente tiene elementos en el carrito o citas asociadas antes de eliminarlo
+    /**
+    * Método para eliminar un cliente de la base de datos.
+    *
+    * @param int $id ID del cliente a eliminar.
+    */
     public function deleteCliente($id) {
         $sqlCarrito = "SELECT COUNT(*) AS cantidad FROM Carrito WHERE clienteID = ?";
         $statementCarrito = $this->conn->prepare($sqlCarrito);
@@ -78,7 +121,12 @@ class Cliente {
         }
     }
 
-    // Obtiene un cliente específico por su ID y lo devuelve en formato JSON
+    /**
+    * Método para obtener un cliente específico por su ID.
+    * Devuelve un JSON con la información del cliente.
+    *
+    * @param int $clienteId ID del cliente a obtener.
+    */
     public function getClientePorId($clienteId) {
         $sql = "SELECT id, nombre, apellidos, email, telefono FROM cliente WHERE id = ?";
     
@@ -98,8 +146,38 @@ class Cliente {
         }
     }
 
-    // Actualiza la información de un cliente en la base de datos
+    /**
+    * Método para actualizar la información de un cliente existente.
+    *
+    * @param int $id ID del cliente a actualizar.
+    * @param string $nombreClienteNuevo Nuevo nombre del cliente.
+    * @param string $apellidosNuevo Nuevos apellidos del cliente.
+    * @param string $emailNuevo Nuevo email del cliente.
+    * @param string $telefonoNuevo Nuevo teléfono del cliente.
+    */
     public function putCliente($id, $nombreCliente, $apellidos, $email, $telefono) {
+        
+        //Otra manera de si el nombre y apellido no cintienen caracteres especiales ni numero
+        if (!preg_match("/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/u", $nombreCliente) || !preg_match("/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/u", $apellidos)) {
+            header('Content-Type: application/json');
+            echo json_encode(array('mensaje' => 'El nombre y apellidos deben contener solo letras.'));
+            return;
+        }
+        
+        // Otra manera si el email es válido
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            header('Content-Type: application/json');
+            echo json_encode(array('mensaje' => 'El email no es válido.'));
+            return;
+        }
+    
+        // Otra manera de verificar del teléfono
+        if (!preg_match("/^\d{9}$/", $telefono)) {
+            header('Content-Type: application/json');
+            echo json_encode(array('mensaje' => 'El teléfono debe contener exactamente 9 cifras.'));
+            return;
+        }
+        
         $sql = "UPDATE cliente SET nombre = ?, apellidos = ?, email = ?, telefono = ? WHERE id = ?";
         
         $statement = $this->conn->prepare($sql);
@@ -114,7 +192,12 @@ class Cliente {
         }
     }
 
-    // Obtiene los productos en el carrito de un cliente específico y los devuelve en formato JSON
+    /**
+    * Método para obtener los productos en el carrito de un cliente específico.
+    * Devuelve un JSON con la información de los productos en el carrito del cliente.
+    *
+    * @param int $clienteId ID del cliente del que se desean obtener los productos en el carrito.
+    */
     public function getCarritoCliente($clienteId) {
         $sql = "SELECT p.id, p.nombre, p.descripcion, p.precio, c.cantidad 
                 FROM Carrito c 
@@ -137,14 +220,25 @@ class Cliente {
     }
 }
 
+/** 
+* Clase Producto, en está clase haremos las gestiones de producto
+* que tiene que ver en la base de datos.
+*/
 class Producto {
     private $conn;
 
+    /**
+    *  Constructor de la clase Producto.
+    *  Inicializa la conexión a la base de datos.
+    */
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
 
-    // Obtiene todos los productos de la base de datos, incluyendo su categoría, y los devuelve en formato JSON
+    /**
+    * Método para obtener todos los productos.
+    * Devuelve un JSON con la información de todos los productos.
+    */
     public function getProductos() {
         $sql = "SELECT p.id, p.sku, p.nombre, p.descripcion, c.nombre AS categoria, p.stock, p.precio 
                 FROM Producto p
@@ -164,18 +258,30 @@ class Producto {
         }
     }
 
-    // Registra un nuevo producto en la base de datos, verificando si la categoría y el SKU ya existen, y validando los campos  
+    /**
+     * Método para registrar un nuevo producto.
+     * 
+     * @param int $sku El sku del cliente.
+     * @param string $nombreProducto Nombre del producto.
+     * @param string $descripcion Descripción del producto.
+     * @param int $categoriaID El id de la categoria al que se quiere añadir el producto.
+     * @param int $stock Stock del producto.
+     * @param float $precio Precio del producto.
+    */      
     public function postProducto($sku, $nombreProducto, $descripcion, $categoriaID, $stock, $precio) {
         
+        // Verificaciones de las variables, si se han introducido todas y en el formato correcto
         $categoriaExistente = $this->verificarCategoriaExistente($categoriaID);
         $skuExistente = $this->verificarSkuExistente($sku);
 
+        // Aqui comporbamos si la categoría que se introudce existe en la bd o no
         if (!$categoriaExistente) {
             header('Content-Type: application/json', true, 400);
             echo json_encode(array('mensaje' => 'La categoría especificada no existe'));
             return;
         }
         
+        // Aqui hacemos lo mismo que con la categoría
         if ($skuExistente) {
             header('Content-Type: application/json', true, 400);
             echo json_encode(array('mensaje' => 'El sku ya existe'));
@@ -200,6 +306,7 @@ class Producto {
             return;
         }
 
+        // Si todo a sido correcto introducimos el dato en la bd
         $sql = "INSERT INTO producto (sku, nombre, descripcion, categoriaID, stock, precio) VALUES (?, ?, ?, ?, ?, ?)";
         
         $statement = $this->conn->prepare($sql);
@@ -214,7 +321,14 @@ class Producto {
         }
     }
     
-    // Verifica si una categoría existe en la base de datos
+    /**
+    * Verifica si una categoría existe en la base de datos.
+    *
+    * @param int $categoriaID El ID de la categoría a verificar. 
+    *
+    * @return bool Devuelve true si la categoría existe, de lo contrario devuelve false.
+    *
+    */
     private function verificarCategoriaExistente($categoriaID) {
         $sql = "SELECT id FROM categoria WHERE id = ?";
         $statement = $this->conn->prepare($sql);
@@ -224,7 +338,14 @@ class Producto {
         return $statement->num_rows > 0;
     }
 
-    // Verifica si un SKU ya está en uso en la base de datos
+    /**
+    * Verifica si un SKU ya está en uso en la base de datos.
+    *
+    * @param int $sku El SKU a verificar. 
+    *
+    * @return bool Devuelve true si el SKU ya está en uso, de lo contrario devuelve false.
+    *
+    */
     private function verificarSkuExistente($sku) {
         $sql = "SELECT id FROM producto WHERE sku = ?";
         $statement = $this->conn->prepare($sql);
@@ -234,7 +355,14 @@ class Producto {
         return $statement->num_rows > 0;
     }    
 
-    // Verifica si un número (SKU o stock) es válido y positivo
+    /**
+    * Verifica si un número (SKU o stock) es válido y positivo.
+    * 
+    * @param int $sku El SKU a verificar.
+    * @param int $stock El stock a verificar.
+    * 
+    * @return bool Devuelve true si el SKU y el stock son números positivos, de lo contrario devuelve false.
+    */
     private function verificarNumeroValido($sku, $stock) {
 
         if (!preg_match('/^\d+$/', $sku, $stock)) {
@@ -243,33 +371,63 @@ class Producto {
         return $sku > 0;
     }
 
-    // Verifica si un nombre de producto contiene solo letras y espacios
+    /**
+    * Verifica si un nombre de producto contiene solo letras y espacios.
+    * 
+    * @param string $nombreProducto El nombre del producto a verificar.
+    * 
+    * @return bool Devuelve true si el nombre del producto contiene solo letras y espacios, de lo contrario devuelve false.
+    */
     private function verificarLetrasValido($nombreProducto) {
         return preg_match('/^[a-zA-Z\s]+$/', $nombreProducto);
     }
 
-    // Verifica si un precio es válido, siendo un número positivo con hasta dos decimales
+    /**
+    * Verifica si un precio es válido, siendo un número positivo con hasta dos decimales.
+    * 
+    * @param float $precio El precio a verificar.
+    * 
+    * @return bool Devuelve true si el precio es un número positivo con hasta dos decimales, de lo contrario devuelve false.
+    */
     public function verificarPrecioValido($precio) {
         return preg_match('/^\d+(\.\d{1,2})?$/', $precio) && $precio > 0;
     }
 
-    // Elimina un producto de la base de datos por su ID
+    /**
+    * Método para eliminar un producto de la base de datos.
+    * @param int $id ID del producto a eliminar.
+    */
     public function deleteProducto($id) {
-        $sql = "DELETE FROM producto WHERE id = ?";
+        $sqlCarrito = "SELECT COUNT(*) AS cantidad FROM Carrito WHERE productoID = ?";
+        $statementCarrito = $this->conn->prepare($sqlCarrito);
+        $statementCarrito->bind_param("i", $id);
+        $statementCarrito->execute();
+        $resultadoCarrito = $statementCarrito->get_result();
+        $filaCarrito = $resultadoCarrito->fetch_assoc();
+        $cantidadCarrito = intval($filaCarrito['cantidad']);
         
-        $statement = $this->conn->prepare($sql);
-        $statement->bind_param("i", $id);
-        
-        if ($statement->execute()) {
-            header('Content-Type: application/json', true, 200);
-            echo json_encode(array('mensaje' => 'Producto eliminado correctamente'));
+        if ($cantidadCarrito > 0) {
+            header('Content-Type: application/json', true, 400);
+            echo json_encode(array('mensaje' => 'El producto se encuentra en el carrito'));
         } else {
-            header('Content-Type: application/json', true, 500);
-            echo json_encode(array('mensaje' => 'Error al eliminar producto: ' . $statement->error));
+            $sql = "DELETE FROM producto WHERE id = ?";
+            
+            $statement = $this->conn->prepare($sql);
+            $statement->bind_param("i", $id);
+            
+            if ($statement->execute()) {
+                header('Content-Type: application/json', true, 200);
+                echo json_encode(array('mensaje' => 'Producto eliminado correctamente'));
+            }
         }
     }
 
-    // Actualiza el stock de un producto en la base de datos, verificando si tiene elementos en el carrito antes de actualizar
+    /**
+    * Metodo para actualizar el stock de a base de datos.
+    *
+    * @param int $productoID Es el id que se busca para cambiarle es stock.
+    * @param int $nuevoStock Es el nuevo stock que va a integrarse a la bd.
+    */
     public function putStockProducto($productoID, $nuevoStock) {
         // Preparar la consulta SQL para actualizar el stock del producto
         $sqlCarrito = "SELECT COUNT(*) AS cantidad FROM Carrito WHERE productoID = ?";
@@ -304,14 +462,25 @@ class Producto {
     
 }
 
+/**
+ * Clase Categoria, esta clase la usaremos para hacer llamadas en otras funciones y clases.
+ * La aprovecharemos para algunos filtros y inputs tipo select para creación de datos nuevos.
+ */
 class Categoria{
     private $conn;
 
+    /**
+    *  Constructor de la clase Categoria.
+    *  Inicializa la conexión a la base de datos.
+    */
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
 
-    // Obtiene todos las categorías de la base de datos, incluyendo su categoría, y los devuelve en formato JSON
+    /**
+    * Método para obtener todos las categorias.
+    * Devuelve un JSON con la información de todas las categorias.
+    */
     public function getCategorias() {
         $sql = "SELECT c.id, c.nombre FROM Categoria c";
     
@@ -330,14 +499,25 @@ class Categoria{
     }
 }
 
+/**
+ * Clase Peluquero, esta clase la usaremos para hacer llamadas en otras funciones y clases.
+ * La aprovecharemos para algunos filtros y inputs tipo select para creación de datos nuevos.
+ */
 class Peluquero{
     private $conn;
 
+    /**
+    *  Constructor de la clase Peluquero.
+    *  Inicializa la conexión a la base de datos.
+    */
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
 
-    // Obtiene todos los peluqueros de la base de datos, incluyendo su categoría, y los devuelve en formato JSON
+    /**
+    * Método para obtener todos los peluqueros.
+    * Devuelve un JSON con la información de todos los peluqueros.
+    */
     public function getPeluquero() {
         $sql = "SELECT p.id, p.nombre, p.apellidos, p.telefono FROM Peluquero p";
     
@@ -356,14 +536,25 @@ class Peluquero{
     }
 }
 
+/**
+ * Clase Servicio, esta clase la usaremos para hacer llamadas en otras funciones y clases.
+ * La aprovecharemos para algunos filtros y inputs tipo select para creación de datos nuevos.
+ */
 class Servicio{
     private $conn;
 
+    /**
+    *  Constructor de la clase Servicio.
+    *  Inicializa la conexión a la base de datos.
+    */
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
 
-    // Obtiene todos los servicios de la base de datos, incluyendo su categoría, y los devuelve en formato JSON
+    /**
+    * Método para obtener todos los servicios.
+    * Devuelve un JSON con la información de todos los servicios.
+    */
     public function getServicio() {
         $sql = "SELECT s.id, s.nombre_servicio, s.precio FROM Servicio s";
     
@@ -382,14 +573,25 @@ class Servicio{
     }
 }
 
+/**
+ * Calse Carrito, en esta clase gestionaremos las operaciones que tiene el carrito.
+ * Aquí nos encontraremos valores/parametros tanto del propio carrito como de clientes y productos
+ */
 class Carrito{
     private $conn;
 
+    /**
+    *  Constructor de la clase Carrito.
+    *  Inicializa la conexión a la base de datos.
+    */
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
 
-    // Obtiene los elementos del carrito de la base de datos y los devuelve en formato JSON
+    /**
+    * Método para obtener todos los clientes y productos que se han añadido al carrito.
+    * Devuelve un JSON con la información de todos los clientes y productos que se han añadido al carrito.
+    */
     public function getCarrito() {
         $sql = "SELECT c.id, cl.id AS clienteID, cl.nombre AS nombre, cl.apellidos AS apellido, p.nombre AS producto, e.estado AS estado, c.cantidad, c.precio_total
                 FROM Carrito c
@@ -411,7 +613,15 @@ class Carrito{
         }
     }
 
-    // Registra un nuevo elemento en el carrito, verificando si los clientes, productos y estados existen
+    /**
+    * Método para añadir un producto al carrito.
+    * 
+    * @param int $clienteID El ID del cliente.
+    * @param int $productoID El ID del producto a añadir.
+    * @param int $estadoID El ID del estado del producto en el carrito.
+    * @param int $cantidad La cantidad del producto a añadir.
+    * @param float $precioTotal El precio total del producto en el carrito.
+    */
     public function postCarrito($clienteID, $productoID, $estadoID, $cantidad, $precioTotal) {
         // Preparar la consulta SQL para insertar el producto en el carrito
         $clienteExistente = $this->verificarClienteExistente($clienteID);
@@ -451,6 +661,13 @@ class Carrito{
         }
     }
 
+    /**
+    * Método privado para verificar si un cliente existe en la base de datos.
+    * 
+    * @param int $clienteID El ID del cliente a verificar.
+    * 
+    * @return bool Devuelve true si el cliente existe, de lo contrario devuelve false.
+    */
     private function verificarClienteExistente($clienteID) {
         $sql = "SELECT id FROM cliente WHERE id = ?";
         $statement = $this->conn->prepare($sql);
@@ -460,6 +677,13 @@ class Carrito{
         return $statement->num_rows > 0;
     }
     
+    /**
+    * Método privado para verificar si un producto existe en la base de datos.
+    * 
+    * @param int $productoID El ID del producto a verificar.
+    * 
+    * @return bool Devuelve true si el producto existe, de lo contrario devuelve false.
+    */
     private function verificarProductoExistente($productoID) {
         $sql = "SELECT id FROM producto WHERE id = ?";
         $statement = $this->conn->prepare($sql);
@@ -469,6 +693,13 @@ class Carrito{
         return $statement->num_rows > 0;
     }
     
+     /**
+    * Método privado para verificar si un estado existe en la base de datos.
+    * 
+    * @param int $estadoID El ID del estado a verificar.
+    * 
+    * @return bool Devuelve true si el estado existe, de lo contrario devuelve false.
+    */
     private function verificarEstadoExistente($estadoID) {
         $sql = "SELECT id FROM estado WHERE id = ?";
         $statement = $this->conn->prepare($sql);
@@ -478,7 +709,11 @@ class Carrito{
         return $statement->num_rows > 0;
     }
 
-    // Elimina un elemento del carrito por su ID, y revierte la cantidad eliminada al stock del producto asociado
+    /**
+    * Método para eliminar un elemento del carrito por su ID, y revertir la cantidad eliminada al stock del producto asociado.
+    * 
+    * @param int $id El ID del elemento del carrito a eliminar.
+    */
     public function deleteCarrito($id) {
         // Obtener la cantidad eliminada del carrito y el ID del producto asociado
         $sql = "SELECT productoID, cantidad FROM carrito WHERE id = ?";
@@ -511,14 +746,25 @@ class Carrito{
     
 }
 
+/**
+ * Clase Cita, esta clase gestiona las operaciones relacionadas con las citas de los clientes.
+ */
 class Cita{
     private $conn;
 
+    /**
+    * Constructor de la clase Cita.
+    * Inicializa la conexión a la base de datos.
+    */
     public function __construct() {
         $this->conn = connection::dbConnection();
     }
 
-    // Obtiene las citas de la base de datos y las devuelve en formato JSON
+    /**
+    * Método para obtener todas las citas de la base de datos y devolverlas en formato JSON.
+    * 
+    * @return string Devuelve un JSON con la información de todas las citas.
+    */
     public function getCitas() {
         $sql = "SELECT c.id, c.horario, cl.id AS clienteID, cl.nombre AS nombre, cl.apellidos AS apellido, s.nombre_servicio AS servicio, p.nombre AS peluquero
                 FROM Cita c
@@ -540,7 +786,14 @@ class Cita{
         }
     }
 
-    // Registra una nueva cita, verificando la existencia del cliente, servicio y peluquero, así como la disponibilidad del peluquero en el horario especificado
+    /**
+    * Método para registrar una nueva cita.
+    * 
+    * @param string $horario El horario de la cita.
+    * @param int $clienteID El ID del cliente.
+    * @param int $servicioID El ID del servicio de la cita.
+    * @param int $peluqueroID El ID del peluquero de la cita.
+    */
     public function postCita($horario, $clienteID, $servicioID, $peluqueroID) {
 
         $clienteExistente = $this->verificarClienteExistente($clienteID);
@@ -588,6 +841,13 @@ class Cita{
         }
     }
 
+     /**
+    * Método privado para verificar si un cliente existe en la base de datos.
+    * 
+    * @param int $clienteID El ID del cliente a verificar.
+    * 
+    * @return bool Devuelve true si el cliente existe, de lo contrario devuelve false.
+    */
     private function verificarClienteExistente($clienteID) {
         $sql = "SELECT id FROM cliente WHERE id = ?";
         $statement = $this->conn->prepare($sql);
@@ -597,6 +857,13 @@ class Cita{
         return $statement->num_rows > 0;
     }
     
+    /**
+    * Método privado para verificar si un servicio existe en la base de datos.
+    * 
+    * @param int $servicioID El ID del servicio a verificar.
+    * 
+    * @return bool Devuelve true si el servicio existe, de lo contrario devuelve false.
+    */
     private function verificarServicioExistente($servicioID) {
         $sql = "SELECT id FROM servicio WHERE id = ?";
         $statement = $this->conn->prepare($sql);
@@ -606,6 +873,13 @@ class Cita{
         return $statement->num_rows > 0;
     }
     
+    /**
+    * Método privado para verificar si un peluquero existe en la base de datos.
+    * 
+    * @param int $peluqueroID El ID del peluquero a verificar.
+    * 
+    * @return bool Devuelve true si el peluquero existe, de lo contrario devuelve false.
+    */
     private function verificarPeluqueroExistente($peluqueroID) {
         $sql = "SELECT id FROM peluquero WHERE id = ?";
         $statement = $this->conn->prepare($sql);
@@ -615,6 +889,14 @@ class Cita{
         return $statement->num_rows > 0;
     }
 
+     /**
+    * Método privado para verificar la disponibilidad de un peluquero en un horario específico.
+    * 
+    * @param string $horario El horario de la cita.
+    * @param int $peluqueroID El ID del peluquero.
+    * 
+    * @return bool Devuelve true si el peluquero está disponible, de lo contrario devuelve false.
+    */
     private function verificarDisponibilidadPeluquero($horario, $peluqueroID) {
      
         $sql = "SELECT COUNT(*) as total FROM cita WHERE horario = ? AND peluqueroID = ?";
@@ -626,7 +908,11 @@ class Cita{
         return $row['total'] == 0;
     }
 
-    // Elimina una cita por su horario
+    /**
+    * Método para eliminar una cita por su ID.
+    * 
+    * @param int $id El ID de la cita a eliminar.
+    */
     public function deleteCita($id) {
 
         $sql = "DELETE FROM cita WHERE id = ?";

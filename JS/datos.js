@@ -68,7 +68,6 @@ function getClientes() {
             var tabla = $('<table>').addClass('table');
             var cabecera = $('<thead>').append(
                 $('<tr>').append(
-                    $('<th>').text('ID'),
                     $('<th>').text('Nombre'),
                     $('<th>').text('Apellidos'),
                     $('<th>').text('Correo electrónico'),
@@ -81,7 +80,6 @@ function getClientes() {
             var cuerpo = $('<tbody>');
             response.forEach(function(cliente) {
                 var row = $('<tr>').append(
-                    $('<td>').text(cliente.id),
                     $('<td>').text(cliente.nombre),
                     $('<td>').text(cliente.apellidos),
                     $('<td>').text(cliente.email),
@@ -119,7 +117,7 @@ function getClientes() {
                 $('#nuevoCliente').show();
             });
         },
-        error: function(xhr, status, error) {
+        error: function(error) {
             console.error('Error al obtener clientes:', error);
         }
     });
@@ -151,7 +149,7 @@ function clienteTieneProductosEnCarrito(clienteId) {
                 return false;
             }
         },
-        error: function(xhr, status, error) {
+        error: function(error) {
             console.error('Error al obtener el carrito del cliente:', error);
             return false; 
         }
@@ -169,7 +167,7 @@ function getCliente(clienteId) {
             showDetallesCliente(response);
 
         },
-        error: function(xhr, status, error) {
+        error: function(error) {
             console.error('Error al obtener detalles del cliente:', error);
         }
     });
@@ -295,29 +293,39 @@ function putCliente(clienteId) {
     var telefonoNuevo = $('#telefonoClientenuevo').val();
 
     // Validaciones y comporbaciónes
-    if (nombreCliente === '' || apellidos === '' || email === '' || telefono === '') {
+    detectSqlInjection(nombreClienteNuevo, apellidosNuevo, emailNuevo, telefonoNuevo);
+
+    if (nombreClienteNuevo === '' || apellidosNuevo === '' || emailNuevo === '' || telefonoNuevo === '') {
         alert('Por favor, completa todos los campos.');
         return;
+    } else if (!isValidNombre(nombreClienteNuevo || apellidosNuevo)) {
+        alert('Por favor, introduce el nombre o apellido válido.')
+    } else if (!isValidEmail(emailNuevo)) {
+        alert('Por favor, introduce un correo electrónico válido.');
+        return;
+    } else if (!isValidNumeroTlf(telefonoNuevo)) {
+        alert('Por favor, introduce un número de teléfono válido.');
+        return; 
+    } else {
+        $.ajax({
+            url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + clienteId,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                nombre: nombreClienteNuevo,
+                apellidos: apellidosNuevo,
+                email: emailNuevo,
+                telefono: telefonoNuevo
+            }),
+            success: function(response) {
+                console.log('Cliente actualizado correctamente:', response);
+                alert("Cliete actualizado ccorrectamente");
+            },
+            error: function(error) {
+                console.error('Error al actualizar cliente:', error);
+            }
+        });
     }
-
-    $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente/' + clienteId,
-        type: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            nombre: nombreClienteNuevo,
-            apellidos: apellidosNuevo,
-            email: emailNuevo,
-            telefono: telefonoNuevo
-        }),
-        success: function(response) {
-            console.log('Cliente actualizado correctamente:', response);
-            alert("Cliete actualizado ccorrectamente");
-        },
-        error: function(xhr, status, error) {
-            console.error('Error al actualizar cliente:', error);
-        }
-    });
 }
 
 // Función para crear clientes nuevos
@@ -339,39 +347,36 @@ function postCliente() {
     if (nombreCliente === '' || apellidos === '' || email === '' || telefono === '') {
         alert('Por favor, completa todos los campos.');
         return;
-    }
-
-    if (!isValidEmail(email)) {
+    } else if (!isValidNombre(nombreCliente, apellidos)) {
+        alert('Por favor, introduce el nombre o apellido válido.')
+    } else if (!isValidEmail(email)) {
         alert('Por favor, introduce un correo electrónico válido.');
         return;
-    }
-
-    if (!isValidPhoneNumber(telefono)) {
+    } else if (!isValidNumeroTlf(telefono)) {
         alert('Por favor, introduce un número de teléfono válido.');
         return; 
+    } else {
+        $.ajax({
+            url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                nombreCliente: nombreCliente,
+                apellidos: apellidos,
+                email: email,
+                telefono: telefono
+            },
+            success: function(response) {
+                alert('Cliente registrado con éxito');
+                console.log('Datos enviados:', response);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error al registrar cliente:', error);
+                console.log('Respuesta del servidor:', xhr.responseText);
+                alert('Error al registrar cliente');
+            }
+        });
     }
-
-    $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Cliente',
-        type: 'POST',
-        dataType: 'json',
-        data: {
-            nombreCliente: nombreCliente,
-            apellidos: apellidos,
-            email: email,
-            telefono: telefono
-        },
-        success: function(response) {
-            alert('Cliente registrado con éxito');
-            console.log('Datos enviados:', response);
-            location.reload();
-        },
-        error: function(xhr, status, error) {
-            console.error('Error al registrar cliente:', error);
-            console.log('Respuesta del servidor:', xhr.responseText);
-            alert('Error al registrar cliente');
-        }
-    });
 }
 
 // Llamada a la función
@@ -611,7 +616,7 @@ function deleteProducto(id) {
         },
         error: function(xhr, status, error) {
             console.error('Error al eliminar el producto:', error);
-            alert('Error al eliminar el producto.');
+            alert('El producto se encuentra en el carrito no se puede eliminar');
         }
     });
 }
@@ -710,6 +715,7 @@ function getCarrito() {
         }
     });
 }
+
 
 // Un filtro para filtrar los pedidos por apellidos y nombre
 function filtrarCarritoPorApellido(apellido) {
@@ -1028,7 +1034,6 @@ function getCompra() {
                 selectClientes.append(option);
             });
 
-
             // Obtener lista de productos
             $.ajax({
                 url: 'http://localhost/QuibixPC/conexiones/api.php/Producto',
@@ -1041,7 +1046,6 @@ function getCompra() {
                     var totalPages = Math.ceil(response.length / productsPerPage);
 
                     function mostrarProductosEnPagina(page) {
-
                         $('#compra').empty();
                         $('#compra').append('<br>');
                         $('#compra').append($('<h2>').text('Compra'));
@@ -1064,7 +1068,6 @@ function getCompra() {
                         headerRow.append($('<th>').text('Stock'));
                         headerRow.append($('<th>').text('Precio'));
                         headerRow.append($('<th>').text('Cantidad'));
-                        headerRow.append($('<th>').text('Acción'));
                         table.append(headerRow);
 
                         $.each(productsToShow, function(index, producto) {
@@ -1076,33 +1079,31 @@ function getCompra() {
                             row.append($('<td>').text(producto.precio));
 
                             // Input para la cantidad
-                            var cantidadInput = $('<input>').attr('type', 'number').attr('min', 1).attr('max', producto.stock).addClass('form-control');
+                            var cantidadInput = $('<input>').attr('type', 'number').attr('min', 0).attr('max', producto.stock).addClass('form-control');
                             row.append($('<td>').append(cantidadInput));
 
-                            // Botón para agregar al carrito
-                            var botonAgregar = $('<button>').addClass('btn btn-primary').text('Agregar al carrito').click(function() {
-                                var clienteID = $('#clienteSelect').val();
-                                var cantidad = cantidadInput.val();
-
-                                if (parseInt(cantidad) > producto.stock) {
-                                    alert('La cantidad seleccionada excede el stock disponible.');
-                                    return;
-                                }
-
-                                postAlCarrito(producto, clienteID, cantidad);
-                            });
-
                             if (producto.stock <= 0) {
-                                botonAgregar.hide();
+                                cantidadInput.hide();
                             }
-
-                            row.append($('<td>').append(botonAgregar));
 
                             table.append(row);
                         });
 
                         $('#compra').append(table);
-                        mostrarPaginacion(); 
+
+                        // Botón para agregar todos los productos al carrito
+                        var botonAgregar = $('<button>').addClass('btn btn-primary').text('Agregar al carrito').click(function() {
+                            var clienteID = $('#clienteSelect').val();
+                            productsToShow.forEach(function(producto, index) {
+                                var cantidad = parseInt($('table').find('tr').eq(index + 1).find('input[type="number"]').val());
+                                if (cantidad > 0) {
+                                    postAlCarrito(producto, clienteID, cantidad);
+                                }
+                            });
+                        });
+
+                        $('#compra').append($('<br>')).append(botonAgregar);
+                        mostrarPaginacion();
                     }
 
                     // Mostrar paginación
@@ -1112,27 +1113,24 @@ function getCompra() {
                             var button = $('<button>').addClass('pagination-button').text(i).click((function(page) {
                                 return function() {
                                     mostrarProductosEnPagina(page);
-
                                 };
                             })(i));
                             pagination.append(button);
-                            
                         }
                         $('#compra').append(pagination);
-
                         $('#compra').append('<br>');
                     }
 
                     // Mostrar la primera página
                     mostrarProductosEnPagina(1);
 
-                    },
-                error: function(xhr, status, error) {
+                },
+                error: function(error) {
                     console.error('Error al obtener productos:', error);
                 }
             });
         },
-        error: function(xhr, status, error) {
+        error: function(error) {
             console.error('Error al obtener clientes:', error);
         }
     });
@@ -1249,9 +1247,14 @@ function isValidEmail(email) {
 }
 
 // Validacion numero TLF
-function isValidPhoneNumber(telefono) {
+function isValidNumeroTlf(telefono) {
     var phoneRegex = /^\d{9}$/;
     return phoneRegex.test(telefono);
+}
+
+function isValidNombre(nombreCliente, apellidos) {
+    var nameRegex = /^[A-Za-zÁáÉéÍíÓóÚúÑñÜü\s]+$/;
+    return nameRegex.test(nombreCliente, apellidos);
 }
 
 //Detección de SQL Injection
