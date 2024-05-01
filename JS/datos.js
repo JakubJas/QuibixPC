@@ -729,6 +729,12 @@ function filtrarCarritoPorApellido(apellido) {
 
 // Subida de productos y clientes al carrito 
 function postAlCarrito(producto, clienteID, cantidad) {
+    
+    if (cantidad > producto.stock) {
+        alert("Lo sentimos, no hay suficiente stock disponible para este producto.");
+        return;
+    }
+    
     // Se calcula el precio total del producto
     var precioTotal = cantidad * producto.precio;
 
@@ -759,23 +765,6 @@ function postAlCarrito(producto, clienteID, cantidad) {
     });
 }
 
-// Se borra del varrito el producto y al cliente
-function deleteCarrito(id) {
-    $.ajax({
-        url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito/' + id,
-        type: 'DELETE',
-        dataType: 'json',
-        success: function(response) {
-            alert('Producto eliminado del carrito correctamente');
-            location.reload();
-        },
-        error: function(xhr, status, error) {
-            console.error('Error al eliminar del carrito:', error);
-            alert('Error al eliminar producto del carrito.');
-        }
-    });
-}
-
 // Hace un update en el stock del producto
 function putStockProducto(productoID, nuevoStock) {
 
@@ -798,6 +787,24 @@ function putStockProducto(productoID, nuevoStock) {
     });
 }
  
+
+// Se borra del varrito el producto y al cliente
+function deleteCarrito(id) {
+    $.ajax({
+        url: 'http://localhost/QuibixPC/conexiones/api.php/Carrito/' + id,
+        type: 'DELETE',
+        dataType: 'json',
+        success: function(response) {
+            alert('Producto eliminado del carrito correctamente');
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al eliminar del carrito:', error);
+            alert('Error al eliminar producto del carrito.');
+        }
+    });
+}
+
 // CITAS····················································································································································
 
 // Función de conseguir las citas de la BD
